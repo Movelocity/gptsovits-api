@@ -1,0 +1,18 @@
+paths:
+  gpt_path: "pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"
+  sovits_path: "pretrained_models/s2G488k.pth"
+  bert_path: "pretrained_models/chinese-roberta-wwm-ext-large"
+  cnhubert_base_path: "pretrained_models/chinese-hubert-base"
+
+settings:
+  infer_tts_port: 9872
+  is_share: false
+  is_half: true
+
+language_dict:
+  中文: "all_zh"
+  英文: "en"
+  日文: "all_ja"
+  中英混合: "zh"
+  日英混合: "ja"
+  多语种混合: "auto"

@@ -1,0 +1,11 @@
+text/cmu*.rep
+text/eng*.rep
+text/engdict-hot.rep
+text/opencpop-strict.txt
+
+*__pycache__
+
+pretrained_models/*
+TEMP/*
+*.pickle
+*.db
