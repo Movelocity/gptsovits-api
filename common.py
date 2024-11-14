@@ -4,6 +4,8 @@ import os
 import yaml
 import torch
 
+support_langs = ["all_zh", "en", "all_ja", "zh", "ja", "auto"]
+
 @contextmanager
 def timer(log_label: str):
     start_time = time.time()

@@ -26,6 +26,7 @@ class SpeakerInfo(Base):
     speaker_id = Column(String, primary_key=True)
     voicefile = Column(String)
     text = Column(String)
+    lang = Column(String)
     description = Column(String)
 
 Base.metadata.create_all(engine)

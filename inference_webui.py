@@ -241,11 +241,11 @@ def get_prompt(wav_path):
 
         wav16k = torch.cat([wav16k, zero_wav_torch])
         ssl_content = model_dict['ssl_model'].model(wav16k.unsqueeze(0))["last_hidden_state"].transpose(1, 2)  # .float()
-        print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len
+        # print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len # [1, 768, 280]
 
         codes = model_dict['vq_model'].extract_latent(ssl_content)
         prompt_semantic = codes[0, 0].unsqueeze(0).to(device)
-        print(f"> voice prompt shape: {prompt_semantic.shape}")
+        # print(f"> voice prompt shape: {prompt_semantic.shape}")  # [1, 140]
     return prompt_semantic
 
 
@@ -387,7 +387,7 @@ def split_text(text, how_to_cut=i18n("不切")):
     if text[0] not in splits and len(first_word) < 4: 
         text = ("。" if text_language != "en" else ".") + text
 
-    print("target text: ", text)
+    # print("target text: ", text)
     cut_name = cuts_map.get(how_to_cut)
     cut_fn = cuts.get(cut_name)
     text = cut_fn(text)
@@ -410,7 +410,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
     if not ref_free:
         prompt_text = prompt_text.strip("\n")
         if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_language != "en" else "."
-        print("prompt_text: ", prompt_text)
+        # print("prompt_text: ", prompt_text)
 
         prompt_phonemes, bert1, norm_text1 = get_phones_and_bert(prompt_text, prompt_language)
 

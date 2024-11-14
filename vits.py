@@ -311,7 +311,7 @@ def split_text(text, cut_name="none"):
     print(f"segments: {texts}")
     return texts
 
-support_langs = ["all_zh", "en", "all_ja", "zh", "ja", "auto"]
+from common import support_langs
 
 def validate_lang(lang):
     if lang not in support_langs:
@@ -325,7 +325,7 @@ def process_prompt_text(prompt_text, prompt_language, ref_free):
         prompt_text = prompt_text.strip("\n")
         if prompt_text[-1] not in splits:
             prompt_text += "。" if prompt_language != "en" else "."
-        print("prompt_text: ", prompt_text)
+        # print("prompt_text: ", prompt_text)
         prompt_phonemes, bert1, norm_text1 = get_phones_and_bert(prompt_text, prompt_language)
         return prompt_phonemes, bert1
     return None, None

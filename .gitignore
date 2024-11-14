@@ -9,3 +9,5 @@ pretrained_models/*
 TEMP/*
 *.pickle
 *.db
+run_db.py
+dev.ipynb
