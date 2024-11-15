@@ -1,11 +1,13 @@
 import os
 print("loading modules...")
 from common import infer_tts_port
-from fastapi import FastAPI, Form, UploadFile, File, Query
+from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException
+from fastapi.responses import FileResponse
 from service.tts import TTSService
 from service.speaker import SpeakerService
 from service.db import Base, engine
 from service.schema import TTSRequest
+from service.config import config
 # from datetime import datetime
 # import asyncio
 
@@ -14,8 +16,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+@app.get("/tts")
+async def get_tts_records(page: int, page_size: int):
+    """return list of objects in json"""
+    return TTSService.get_records(page, page_size)
+
 @app.post("/tts")
 async def create_tts(request: TTSRequest):
+    """response {"filename": filename}, if err there won't be filename field"""
     return TTSService.create_tts(request)
 
 @app.post("/speaker")
@@ -40,6 +48,24 @@ async def get_speakers(
 ):
     speakers = SpeakerService.get_speakers(page=page, page_size=page_size)
     return [speaker.to_dict() for speaker in speakers]
+
+@app.get("/voicefile")
+async def get_voicefile(
+    type: str = Query(alias="type"), 
+    name: str = Query(alias="name")
+):
+    if type == "ref":
+        file_path = os.path.join(config.REF_VOICE_DIR, name)  # Change extension as needed
+    elif type == "gen":
+        file_path = os.path.join(config.GEN_VOICE_DIR, name)  # Change extension as needed
+    else:
+        raise HTTPException(status_code=400, detail="Invalid type specified")
+    print(file_path)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(file_path)
+    
 
 # Schedule the cron job
 # async def cron_job():

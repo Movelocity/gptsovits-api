@@ -67,7 +67,7 @@ class TTSService:
 
     # Cron job to delete old audio files
     @staticmethod
-    async def delete_old_files():
+    def delete_old_files():
         session = SessionLocal()
         two_days_ago = datetime.now(timezone.utc) - timedelta(days=2)
         records: list[TTSRecord] = session.query(TTSRecord).filter(TTSRecord.created_at < two_days_ago)
@@ -79,3 +79,11 @@ class TTSService:
             session.query(TTSRecord).filter(TTSRecord.id == record.id).delete()
             session.commit()
         session.close()
+    
+    @staticmethod
+    def get_records(page: int, page_size: int):
+        session: Session = SessionLocal()
+        results = session.query(SpeakerInfo).offset((page - 1) * page_size).limit(page_size).all()
+        session.close()
+        return results
+
