@@ -74,7 +74,7 @@ def get_t2s_model(gpt_path: str=None, force_reload=False):
                 t2s_model = t2s_model.half()
             t2s_model = t2s_model.to(shared.device)
         total = sum([param.nelement() for param in t2s_model.parameters()])
-        print("GPT 模块 参数量: %.2fM" % (total / 1e6))
+        print("GPT 模块参数量: %.2fM" % (total / 1e6))
     return t2s_model
 
 
@@ -155,11 +155,11 @@ def get_prompt(wav_path: str) -> torch.Tensor:
         zero_wav_torch = torch.from_numpy(zero_wav).to(device=shared.device, dtype=use_dtype)
         wav16k = torch.cat([wav16k, zero_wav_torch])
         ssl_content = get_ssl_model().model(wav16k.unsqueeze(0))["last_hidden_state"].transpose(1, 2)  # .float()
-        print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len
+        # print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len # [1, 768, 280]
 
         codes = get_sovits_model().extract_latent(ssl_content)
         prompt_semantic = codes[0, 0].unsqueeze(0).to(shared.device)
-        print(f"> voice prompt shape: {prompt_semantic.shape}")
+        # print(f"> voice prompt shape: {prompt_semantic.shape}")  # [1, 140]
     return prompt_semantic
 
 

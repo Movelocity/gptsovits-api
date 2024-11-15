@@ -72,12 +72,12 @@ shared.cnhubert_base_path = config['paths']['cnhubert_base_path']
 shared.is_half = eval(os.environ.get("is_half", str(config['settings']['is_half'])))
 shared.device = "cuda" if torch.cuda.is_available() else 'cpu'
 
-# import logging
-# if False:
-#     logging.getLogger("markdown_it").setLevel(logging.ERROR)
-#     logging.getLogger("urllib3").setLevel(logging.ERROR)
-#     logging.getLogger("httpcore").setLevel(logging.ERROR)
-#     logging.getLogger("httpx").setLevel(logging.ERROR)
-#     logging.getLogger("asyncio").setLevel(logging.ERROR)
-#     logging.getLogger("charset_normalizer").setLevel(logging.ERROR)
-#     logging.getLogger("torchaudio._extension").setLevel(logging.ERROR) 
+import logging
+logging.getLogger("multipart.multipart").setLevel(logging.ERROR)
+logging.getLogger("markdown_it").setLevel(logging.ERROR)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+logging.getLogger("httpcore").setLevel(logging.ERROR)
+logging.getLogger("httpx").setLevel(logging.ERROR)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
+logging.getLogger("charset_normalizer").setLevel(logging.ERROR)
+logging.getLogger("torchaudio._extension").setLevel(logging.ERROR) 

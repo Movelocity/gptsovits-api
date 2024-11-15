@@ -1,22 +1,45 @@
 import os
+print("loading modules...")
 from common import infer_tts_port
-from fastapi import FastAPI
-from service import TTSService
+from fastapi import FastAPI, Form, UploadFile, File, Query
+from service.tts import TTSService
+from service.speaker import SpeakerService
 from service.db import Base, engine
 from service.schema import TTSRequest
 # from datetime import datetime
 # import asyncio
 
-app = FastAPI()
-
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+app = FastAPI()
 
-@app.post("/tts/")
+@app.post("/tts")
 async def create_tts(request: TTSRequest):
-    return await TTSService.create_tts(request)
+    return TTSService.create_tts(request)
 
+@app.post("/speaker")
+async def add_speaker(
+    name: str = Form(...),
+    voicefile: UploadFile = File(...),
+    text: str = Form(...),
+    lang: str = Form(...),
+    description: str = Form("")
+):  
+    try:
+        new_speaker = SpeakerService.add_speaker(name=name, upload_file=voicefile, text=text, lang=lang, description=description)
+        return {"id": new_speaker["id"], "name": new_speaker["name"]}
+    except Exception as e:
+        print(e)
+        return {"id": 0, "name": "failed"}
+
+@app.get("/speaker")
+async def get_speakers(
+    page: int = Query(1, alias="page"), 
+    page_size: int = Query(1, alias="page_size")
+):
+    speakers = SpeakerService.get_speakers(page=page, page_size=page_size)
+    return [speaker.to_dict() for speaker in speakers]
 
 # Schedule the cron job
 # async def cron_job():
