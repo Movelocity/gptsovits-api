@@ -1,6 +1,6 @@
 import {records_sample, speaker_sample, speakers_sample} from './samples.js'
 
-const USE_SAMPLES = true;
+const USE_SAMPLES = false;
 
 const API_BASE_URL = ''; // Replace with your actual API base URL
 
@@ -127,8 +127,33 @@ export const getSpeaker = async (id) => {
   }
 };
 
-export const updateSpeaker = async () => {
-  
+export const updateSpeaker = async (spk_id, name, voiceFile, text, lang, description) => {
+  try {
+    if (typeof name !== 'string' || name.trim() === '') {
+      throw new Error('Speaker name must be a non-empty string');
+    }
+    validateLanguage(lang);
+
+    const formData = new FormData();
+    formData.append("spk_id", spk_id);
+    formData.append('name', name);
+    if (voiceFile) {
+      formData.append('voicefile', voiceFile);
+    }
+    formData.append('text', text);
+    formData.append('lang', lang);
+    if (description) {
+      formData.append('description', description);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/speaker-update`, {
+      method: 'POST',
+      body: formData,
+    });
+    return await handleError(response);
+  } catch (error) {
+    console.error('Error adding speaker:', error);
+  }
 }
 
 // Get Voice File

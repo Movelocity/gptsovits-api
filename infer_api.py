@@ -58,6 +58,23 @@ async def add_speaker(
         print(e)
         return {"id": 0, "name": "failed"}
 
+@app.post("/speaker-update")
+async def add_speaker(
+    spk_id: int = Form(...),
+    name: str = Form(...),
+    voicefile: UploadFile = File(None),
+    text: str = Form(...),
+    lang: str = Form(...),
+    description: str = Form("")
+):  
+    print("voicefile", voicefile)
+    try:
+        success = SpeakerService.update_speaker(spk_id=spk_id, name=name, upload_file=voicefile, text=text, lang=lang, description=description)
+        return {"success": success}
+    except Exception as e:
+        print(e)
+        return {"id": 0, "name": "failed"}
+
 @app.get("/speaker")
 async def get_speaker(
     id: int = Query(alias="id")

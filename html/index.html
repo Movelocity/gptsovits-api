@@ -170,64 +170,7 @@
       </div>
     </section>
   </main>
-  
-  <!-- Add Speaker Modal -->
-  <!-- <div id="add-speaker-modal" class="modal grey darken-4 white-text modal-fixed-footer">
-    <div class="modal-content" style="margin-top: 24px; padding: 0 24px">
-      <h4>Add New Speaker</h4>
-      <form id="add-speaker-form">
-        <div>
-          <div class="input-field col s12">
-            <input id="speaker-name" type="text" class="white-text" required>
-            <label for="speaker-name">Speaker Name</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <div style="display:flex; flex-direction: row; align-items: center; justify-content: space-between; top:2em; position:inherit">
-              <div style="padding: 10px 0;">
-                <input id="speaker-voicefile-input" type="file" accept="audio/*" placeholder="Choose a file..." required>
-              </div>
-              <a id="speaker_text_asr" style="cursor: pointer; padding: 0 10px;">ASR</a>
-              <audio controls id="speaker_uploadfile" style="height:2em; display:none"></audio>
-            </div>
-            <label for="speaker-voicefile-input">Voice File</label>
-            
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <textarea id="speaker-text" class="materialize-textarea white-text" required></textarea>
-            <label for="speaker-text">Speech Text</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col s12">
-            <label for="speaker-lang">Language</label>
-            <select id="speaker-lang" class="browser-default grey darken-4 white-text" required>
-              <option value="all_zh"selected>Chinese (All)</option>
-              <option value="en">English</option>
-              <option value="all_ja">Japanese (All)</option>
-              <option value="zh">Chinese</option>
-              <option value="ja">Japanese</option>
-              <option value="auto">Auto</option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <textarea id="speaker-description" class="materialize-textarea white-text"></textarea>
-            <label for="speaker-description">Description (optional)</label>
-          </div>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer grey darken-4 white-text">
-      <a href="#!" class="modal-close waves-effect waves-green btn grey">Cancel</a>
-      <button type="submit" form="add-speaker-form" class="waves-effect waves-green btn">Add</button>
-    </div>
-  </div> -->
-
+ 
   <div id="edit-spk-modal" class="modal grey darken-4 white-text modal-fixed-footer">
     <div class="modal-content">
       <h4>Edit Speaker</h4>
@@ -254,16 +197,16 @@
             </div>
           </div>
           <audio controls id="edit_spk_audio" class="col s5" preload="none"></audio>
-          <button id="edit_spk_text_asr" class="btn-floating" title="Speech to Text">
+          <a id="edit_spk_text_asr" class="btn-floating" title="Speech to Text">
             <i class="material-icons right">room_service</i>
-          </button>
+          </a>
         </div>
 
         <div class="row">
           <div class="col s4">
             <label for="edit-spk-lang">Language</label>
             <select id="edit-spk-lang" class="browser-default grey darken-4 white-text" required>
-              <option value="all_zh"selected>Chinese (All)</option>
+              <option value="all_zh" selected>Chinese (All)</option>
               <option value="en">English</option>
               <option value="all_ja">Japanese (All)</option>
               <option value="zh">Chinese</option>
@@ -272,7 +215,7 @@
             </select>
           </div>
           <div class="input-field col s8">
-            <textarea id="edit-spk-text" class="materialize-textarea white-text" placeholder="say anything" required></textarea>
+            <textarea id="edit-spk-text" class="materialize-textarea white-text" style="min-height: 4em;" placeholder="say anything" required></textarea>
             <label for="edit-spk-text">Speech Text</label>
           </div>
         </div>

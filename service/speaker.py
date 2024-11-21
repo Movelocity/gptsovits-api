@@ -61,33 +61,46 @@ class SpeakerService:
         return data
 
     @staticmethod
-    def update_speaker(speaker_id: str, upload_file: UploadFile=None, text: str=None, lang: str=None, description:str=None):
+    def update_speaker(
+        spk_id: str, 
+        name: str,
+        upload_file: UploadFile=None, 
+        text: str=None, 
+        lang: str=None, 
+        description:str=None
+    ):
         session: Session = SessionLocal()
-        speaker = session.query(SpeakerInfo).filter(SpeakerInfo.id == speaker_id).first()
-        if not speaker:
-            raise ValueError("Speaker not found")
+        try:
+            speaker = session.query(SpeakerInfo).filter(SpeakerInfo.id == spk_id).first()
+            if not speaker:
+                raise ValueError("Speaker not found")
 
-        # Replace the old voice file
-        if upload_file is not None:
-            old_voicefile_path = os.path.join(config.REF_VOICE_DIR, speaker.voicefile)
-            if os.path.exists(old_voicefile_path):
-                os.remove(old_voicefile_path)
-            file_name = upload_file.filename
-            new_voicefile = roll_valid_name(file_name, os.listdir(config.REF_VOICE_DIR))
-            with open(os.path.join(config.REF_VOICE_DIR, new_voicefile), 'wb') as f:
-                f.write(upload_file.file.read())  # Replace with actual file handling logic
+            # Replace the old voice file
+            if upload_file is not None:
+                old_voicefile_path = os.path.join(config.REF_VOICE_DIR, speaker.voicefile)
+                if os.path.exists(old_voicefile_path):
+                    os.remove(old_voicefile_path)
+                file_name = upload_file.filename
+                new_voicefile = roll_valid_name(file_name, os.listdir(config.REF_VOICE_DIR))
+                with open(os.path.join(config.REF_VOICE_DIR, new_voicefile), 'wb') as f:
+                    f.write(upload_file.file.read())  # Replace with actual file handling logic
+            
+                speaker.voicefile = new_voicefile
+            
+            if text is not None:
+                speaker.text = text
+            if lang is not None:
+                speaker.lang = lang 
+            if description is not None:
+                speaker.description = description
+            session.commit()
+            return True
+        except:
+            session.rollback()
+            return False
+        finally:
+            session.close()
         
-            speaker.voicefile = new_voicefile
-        
-        if text is not None:
-            speaker.text = text
-        if lang is not None:
-            speaker.lang = lang 
-        if description is not None:
-            speaker.description = description
-
-        session.commit()
-        session.close()
 
     @staticmethod
     def get_speakers(page: int, page_size: int):

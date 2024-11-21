@@ -1,7 +1,7 @@
 import { getSpeaker, getSpeakers, updateSpeaker, addSpeaker, asr, getVoiceFile } from './api.js';
 
 let sCurrentPage = 1;
-const sPageSize = 4;
+const sPageSize = 5;
 
 const $ = (selector) => {
   return document.querySelector(selector);
@@ -15,8 +15,8 @@ export function initSpeakers() {
   console.log($('#edit-spk-form'))
   // M.FormSelect.init($('#speaker-lang'));
 
-  // $('#speaker-voicefile-input').addEventListener('change', onVoiceFileSelected);
-  // $("#speaker_text_asr").addEventListener("click", performASR)
+  $('#edit-spk-file').addEventListener('change', onVoiceFileSelected);
+  $("#edit_spk_text_asr").addEventListener("click", performASR)
 
   $("#add-spk-btn").addEventListener("click", ()=>editSpeaker(-1))
 }
@@ -36,8 +36,8 @@ function onVoiceFileSelected(evt) {
     // Implement TODO: create blob and put blob url to src of #speaker_uploadfile (audio tag)
     const file = evt.target.files[0];
     if (file) {
-      const audioElement = document.getElementById('speaker_uploadfile');
-      audioElement.style.display = "inline-block"
+      const audioElement = $('#edit_spk_audio');
+      // audioElement.style.display = "inline-block"
       if (audioElement) {
         // Revoke the previous blob URL if it exists
         if (audioElement.src) {
@@ -94,7 +94,7 @@ async function loadSpeakers() {
       <a href="#!" onclick="playAudio('${speaker.id}', 'ref')">
         <i class="material-icons">play_arrow</i>
       </a>
-      <span style="cursor:pointer" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || 'N/A'})</span>
+      <span style="cursor:pointer" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || ' '})</span>
       <a href="#!" class="speaker-menu-trigger" onclick="editSpeaker(${speaker.id})">
         <i class="material-icons">subject</i>
       </a>
@@ -107,11 +107,11 @@ async function loadSpeakers() {
 
 /** 翻页功能 */
 function updatePaginationS(total, currentPage, totalPages) {
-  const pageInfo = document.getElementById('s-page-info');
+  const pageInfo = $('#s-page-info');
   pageInfo.textContent = `${currentPage} / ${totalPages}`;
 
-  const prevButton = document.getElementById('s-prev-page');
-  const nextButton = document.getElementById('s-next-page');
+  const prevButton = $('#s-prev-page');
+  const nextButton = $('#s-next-page');
 
   prevButton.disabled = currentPage === 1;
   nextButton.disabled = currentPage === totalPages;
@@ -121,16 +121,16 @@ function changePageS(delta) {
   loadSpeakers();
 }
 
-
-
 /** 语音识别 */
 async function performASR(evt) {
-  const voiceFile = document.getElementById('speaker-voicefile-input').files[0];
+  const voiceFile = $('#edit-spk-file').files[0];
+  console.log("voicefile", voiceFile)
+  if(!voiceFile) return
   try {
     const result = await asr(voiceFile);
     console.log(result)
 
-    document.querySelector("#speaker-text").textContent = result.data;
+    $("#edit-spk-text").value = result.data;
     M.toast({html: 'Speaker added successfully!', classes: 'green'});
   } catch (error) {
     M.toast({html: `Error: ${error.message}`, classes: 'red'});
@@ -141,7 +141,7 @@ const editSpeaker = async function(id) {  // -1 表示新增 speaker
   // 可以接收字符串类型的的 id，(true: '-1' == -1; false: '-2' == -1)
   let speaker;
   if(id == -1){
-    speaker = { name: "", voiceFile: "", text: "", lang: "", description: "" }
+    speaker = { id: -1, name: "", voiceFile: "", text: "", lang: "", description: "" }
     $("#edit-spk-file").required = true
   } else {
     speaker = await getSpeaker(id)
@@ -166,42 +166,26 @@ async function submitSpeaker(evt) {
   evt.preventDefault();
   const id = parseInt($('#edit-spk-id').value);
   const name = $('#edit-spk-name').value.trim();
-  const voiceFile = $('#edit-spk-file').files[0];
   const text = $('#edit-spk-text').value.trim();
   const lang = $('#edit-spk-lang').value;
   const description = $('#edit-spk-desc').value.trim();
-
+  const voiceFile = $('#edit-spk-file').files[0];
+  // console.log(voiceFile) 
+  // return
   try {
-    const result = await updateSpeaker(id, name, voiceFile, text, lang, description);
-    if(!result) throw new Error("编辑speaker失败");
+    if (id == -1) {
+      const result = await addSpeaker(name, voiceFile, text, lang, description);
+      if(!result) throw new Error("新增speaker失败");
+    } else {
+      const result = await updateSpeaker(id, name, voiceFile, text, lang, description);
+      if(!result) throw new Error("编辑speaker失败");
+    }
     // Optionally, you can clear the form fields after submission
-    document.getElementById('add-speaker-form').reset();
-    M.Modal.getInstance(document.getElementById("add-speaker-modal")).close()
+    $('#edit-spk-form').reset();
+    M.Modal.getInstance($("#edit-spk-modal")).close()
     M.toast({html: 'Speaker added successfully!', classes: 'green'});
   } catch (error) {
     M.toast({html: `Error: ${error.message}`, classes: 'red'});
   }
+  
 }
-
-/** 新增声线 */
-// async function submitSpeaker(event) {
-//   event.preventDefault();
-
-//   const name = document.getElementById('speaker-name').value.trim();
-//   const voiceFile = document.getElementById('speaker-voicefile-input').files[0];
-//   const text = document.getElementById('speaker-text').value.trim();
-//   const lang = document.getElementById('speaker-lang').value;
-//   const description = document.getElementById('speaker-description').value.trim();
-
-//   try {
-//     const result = await addSpeaker(name, voiceFile, text, lang, description);
-//     if(!result) throw new Error("新增speaker失败");
-//     // Optionally, you can clear the form fields after submission
-//     document.getElementById('add-speaker-form').reset();
-//     M.Modal.getInstance(document.getElementById("add-speaker-modal")).close()
-//     M.toast({html: 'Speaker added successfully!', classes: 'green'});
-    
-//   } catch (error) {
-//     M.toast({html: `Error: ${error.message}`, classes: 'red'});
-//   }
-// }
