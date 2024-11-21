@@ -11,3 +11,7 @@ TEMP/*
 *.db
 run_db.py
 dev.ipynb
+
+run_frp.bat
+frpc*.toml
+html/deprecated

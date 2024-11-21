@@ -1,25 +1,42 @@
 import os
 print("loading modules...")
-from common import infer_tts_port
 from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from common import infer_tts_port
 from service.tts import TTSService
 from service.speaker import SpeakerService
-from service.db import Base, engine
 from service.schema import TTSRequest
 from service.config import config
-# from datetime import datetime
-# import asyncio
-
+from service.db import Base, engine
+from io import BytesIO
 # Create tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/tts")
+app.mount("/html", StaticFiles(directory="html"), name="html")
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the FastAPI app!"}
+
+# Optional: Create a route to serve the HTML file directly
+@app.get("/html")
+async def read_index():
+    return FileResponse("html/index.html")
+import math
+@app.get("/records")
 async def get_tts_records(page: int, page_size: int):
     """return list of objects in json"""
-    return TTSService.get_records(page, page_size)
+    records = TTSService.get_extended_records(page, page_size)
+    count = TTSService.get_records_count()
+    return {
+        "items": records,
+        "page": page, 
+        "pages": math.ceil(count / page_size),
+        "total": count
+    }
 
 @app.post("/tts")
 async def create_tts(request: TTSRequest):
@@ -42,22 +59,37 @@ async def add_speaker(
         return {"id": 0, "name": "failed"}
 
 @app.get("/speaker")
+async def get_speaker(
+    id: int = Query(alias="id")
+):
+    speaker = SpeakerService.get_speaker(id)
+    return speaker.to_dict()
+
+@app.get("/speakers")
 async def get_speakers(
     page: int = Query(1, alias="page"), 
     page_size: int = Query(1, alias="page_size")
 ):
     speakers = SpeakerService.get_speakers(page=page, page_size=page_size)
-    return [speaker.to_dict() for speaker in speakers]
+    count = SpeakerService.get_speaker_count()
+    return {
+        "items": speakers,
+        "page": page,
+        "pages": math.ceil(count / page_size),
+        "total": count
+    }
 
 @app.get("/voicefile")
 async def get_voicefile(
     type: str = Query(alias="type"), 
-    name: str = Query(alias="name")
+    id: str = Query(alias="id")
 ):
     if type == "ref":
-        file_path = os.path.join(config.REF_VOICE_DIR, name)  # Change extension as needed
+        speaker = SpeakerService.get_speaker(int(id))
+        file_path = os.path.join(config.REF_VOICE_DIR, speaker.voicefile)  # Change extension as needed
     elif type == "gen":
-        file_path = os.path.join(config.GEN_VOICE_DIR, name)  # Change extension as needed
+        # record = TTSService.get_record(id)
+        file_path = os.path.join(config.GEN_VOICE_DIR, id)  # Change extension as needed
     else:
         raise HTTPException(status_code=400, detail="Invalid type specified")
     print(file_path)
@@ -65,7 +97,22 @@ async def get_voicefile(
         raise HTTPException(status_code=404, detail="File not found")
 
     return FileResponse(file_path)
-    
+
+import uuid
+from speech2text import speech2text
+
+@app.post("/asr")
+async def asr(
+    voicefile: UploadFile = File(...),
+    lang: str = Form("zh")
+):
+    filepath = f"TEMP/{uuid.uuid4()}"
+    with open(filepath, 'wb') as f:
+        f.write(voicefile.file.read())
+    text = speech2text(filepath)
+    os.remove(filepath)
+    return {"data": text}
+
 
 # Schedule the cron job
 # async def cron_job():
@@ -96,7 +143,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, signal_handler)
 
     try:
-        uvicorn.run(app, host="localhost", port=infer_tts_port)
+        uvicorn.run(app, host="0.0.0.0", port=infer_tts_port)
     except KeyboardInterrupt:
         print("Interrupted by user. Shutting down gracefully...")
     finally:

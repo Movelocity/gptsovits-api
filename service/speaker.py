@@ -92,9 +92,15 @@ class SpeakerService:
     @staticmethod
     def get_speakers(page: int, page_size: int):
         session: Session = SessionLocal()
-        results = session.query(SpeakerInfo).offset((page - 1) * page_size).limit(page_size).all()
+        speakers = (
+            session.query(SpeakerInfo)
+            .order_by(SpeakerInfo.id.desc())  # Assuming 'id' is the primary key or a suitable column for ordering
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
         session.close()
-        return results
+        return [speaker.to_dict() for speaker in speakers]
 
     @staticmethod
     def get_speaker_count():
@@ -104,9 +110,10 @@ class SpeakerService:
         return count
 
     @staticmethod
-    def get_speaker_by_id(speaker_id: int) -> SpeakerInfo:
+    def get_speaker(speaker_id: int) -> SpeakerInfo:
         session: Session = SessionLocal()
-        speaker =  session.query(SpeakerInfo).filter(SpeakerInfo.id == speaker_id).first()
+        speaker = session.query(SpeakerInfo).filter(SpeakerInfo.id == speaker_id).first()
+        session.close()
         return speaker
 
 

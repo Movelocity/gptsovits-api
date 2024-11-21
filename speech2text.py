@@ -6,7 +6,6 @@ whisper_model = None
 def get_whisper_model():
     global whisper_model
     if whisper_model is None:
-        print('loading whisper model...')
         with timer("Whisper模型加载"):
             whisper_model = whisper.load_model("small")
     return whisper_model

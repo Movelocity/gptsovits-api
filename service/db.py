@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, String, DateTime, Float, Integer, Sequence
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from service.config import config
 
@@ -18,7 +18,19 @@ class TTSRecord(Base):
     top_k = Column(Integer)
     top_p = Column(Float)
     temperature = Column(Float)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.now(timezone.utc) + timedelta(hours=8))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'lang': self.lang,
+            'speaker_id': self.speaker_id,
+            'top_k': self.top_k,
+            'top_p': self.top_p,
+            'temperature': self.temperature,
+            'created_at': self.created_at.isoformat()  # Convert to ISO format for JSON serialization
+        }
 
 class SpeakerInfo(Base):
     __tablename__ = 'speaker_info'

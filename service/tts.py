@@ -6,13 +6,17 @@ from sqlalchemy.orm import Session
 from service.db import SessionLocal, TTSRecord, SpeakerInfo
 from service.config import config
 from service.schema import TTSRequest
+from service.speaker import SpeakerService
 
 from vits import get_tts_wav
 
 class TTSService:
     @staticmethod
-    def get_speaker_info(session: Session, speaker_id: int) -> SpeakerInfo:
-        return session.query(SpeakerInfo).filter(SpeakerInfo.id == speaker_id).first()
+    def get_record(id: str) -> TTSRecord:
+        session: Session = SessionLocal()
+        speaker = session.query(TTSRecord).filter(TTSRecord.id == id).first()
+        session.close()
+        return speaker
 
     @staticmethod
     def create_audio_file(audio_16bit, sample_rate) -> str:
@@ -28,7 +32,7 @@ class TTSService:
             return {"msg": "text 字段为空"}
         session = SessionLocal()
         try:
-            speaker = cls.get_speaker_info(session, req.speaker_id)
+            speaker = SpeakerService.get_speaker(req.speaker_id)
             if not speaker:
                 raise ValueError("Invalid speaker ID")
 
@@ -57,8 +61,7 @@ class TTSService:
             )
             session.add(new_record)
             session.commit()
-
-            return {"filename": filename}
+            return {"id": filename}
         except Exception as e:
             session.rollback()
             raise e
@@ -83,7 +86,46 @@ class TTSService:
     @staticmethod
     def get_records(page: int, page_size: int):
         session: Session = SessionLocal()
-        results = session.query(SpeakerInfo).offset((page - 1) * page_size).limit(page_size).all()
+        records = (
+            session
+            .query(TTSRecord)
+            .order_by(TTSRecord.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+        session.close()
+        results = [record.to_dict() for record in records]
+        return results
+    
+    @staticmethod
+    def get_extended_records(page: int, page_size: int):
+        """获取带带部分 speaker 信息的语音记录"""
+        session: Session = SessionLocal()
+        records = (
+            session
+            .query(TTSRecord, SpeakerInfo.name, SpeakerInfo.description)
+            .join(SpeakerInfo, TTSRecord.speaker_id == SpeakerInfo.id)
+            .order_by(TTSRecord.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+
+        results = []
+        for record, speaker_name, speaker_desc in records:
+            obj = record.to_dict()
+            obj['speaker_name'] = speaker_name
+            obj['speaker_desc'] = speaker_desc
+            results.append(obj)
+        
         session.close()
         return results
+    
+    @staticmethod
+    def get_records_count():
+        session: Session = SessionLocal()
+        count = session.query(TTSRecord).count()
+        session.close()
+        return count
 

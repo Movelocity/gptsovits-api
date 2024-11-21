@@ -1,0 +1,193 @@
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+main {
+  flex: 1 0 auto;
+  padding: 2rem 0;
+}
+
+nav {
+  background-color: #1e1e1e;
+}
+
+.brand-logo {
+  font-weight: 500;
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.card .card-content {
+  padding: 24px;
+}
+
+.card .card-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.card-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 16px;
+}
+
+table.striped > tbody > tr:nth-child(odd) {
+  background-color: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+.btn:hover {
+  background-color: #1e88e5;
+}
+
+.modal {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.modal .modal-footer {
+  background-color: #1e1e1e;
+}
+
+.input-field input[type=text],
+.input-field input[type=number],
+.input-field textarea {
+  color: #e0e0e0;
+  border-bottom: 1px solid #555;
+}
+
+.input-field input[type=text]:focus,
+.input-field input[type=number]:focus,
+.input-field textarea:focus {
+  border-bottom: 1px solid #2196f3;
+  box-shadow: 0 1px 0 0 #2196f3;
+}
+
+.input-field label {
+  color: #888;
+}
+
+.input-field input[type=text]:focus + label,
+.input-field input[type=number]:focus + label,
+.input-field textarea:focus + label {
+  color: #2196f3;
+}
+
+.select-wrapper input.select-dropdown {
+  color: #e0e0e0;
+}
+
+.dropdown-content li > a, .dropdown-content li > span {
+  color: #e0e0e0;
+}
+
+.dropdown-content {
+  background-color: #1e1e1e;
+}
+
+.pagination-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination-container button {
+  margin: 0 10px;
+}
+
+#s-page-info, #t-page-info {
+  font-size: 1.1rem;
+}
+
+@media only screen and (max-width: 992px) {
+  nav .brand-logo {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  h2 {
+    font-size: 2rem;
+  }
+}
+
+#tts-calller {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#tts-result {
+  margin-left: 4em;
+}
+
+.display-none {
+  display: none;
+}
+
+input[type="file"] {
+  visibility: hidden;
+  position: relative;
+  width: 220px;
+  height: 32px;
+  margin-bottom: 8px;
+}
+input[type="file"]:before {
+  content: attr(placeholder);
+  visibility: visible;
+  box-sizing: border-box;
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  
+  /* Add here your design... */
+  line-height: 16px;
+  padding: 8px 32px 8px 8px;
+  color: #ffffffd6;
+  background-color: #3e3d42;
+  border: 1px solid rgba(0, 0, 0, .5);
+  border-radius: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+input[type="file"]:after {
+  visibility: visible;
+  content: "\1F5BF";
+  position: absolute;
+  margin-top: 8px;
+  right: 8px;
+}
+
+.modal {
+  max-height: 80% !important;
+}

@@ -5,7 +5,7 @@ paths:
   cnhubert_base_path: "pretrained_models/chinese-hubert-base"
 
 settings:
-  infer_tts_port: 9872
+  infer_tts_port: 8082
   is_share: false
   is_half: true
 
