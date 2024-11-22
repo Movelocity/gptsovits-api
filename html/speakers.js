@@ -89,15 +89,19 @@ async function loadSpeakers() {
 
   speakers.items.forEach((speaker, slot_id) => {
     const li = document.createElement('li');
-    li.className = "blue-grey darken-3 white-text speaker-item";
+    li.className = "blue-grey darken-3 white-text speaker-item col s12";
     li.innerHTML = `
-      <a href="#!" onclick="playAudio('${speaker.id}', 'ref')">
-        <i class="material-icons">play_arrow</i>
-      </a>
-      <span style="cursor:pointer" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || ' '})</span>
-      <a href="#!" class="speaker-menu-trigger" onclick="editSpeaker(${speaker.id})">
+    <div class="spk-info-row">
+      <span class="spk-leading">
+        <a href="#!" class="btn-floating" onclick="playAudio('${speaker.id}', 'ref')">
+          <i class="material-icons">play_arrow</i>
+        </a>
+        <span style="cursor:pointer" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || ' '})</span>
+      </span>
+      <a href="#!" class="btn" onclick="editSpeaker(${speaker.id})">
         <i class="material-icons">subject</i>
       </a>
+    </div>
     `;
     speakersBody.appendChild(li);
   });
