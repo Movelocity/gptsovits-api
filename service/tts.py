@@ -8,7 +8,13 @@ from service.config import config
 from service.schema import TTSRequest
 from service.speaker import SpeakerService
 
-from vits import get_tts_wav
+from vits import Speaker as TTS_Speaker
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+speakers: dict = {}
 
 class TTSService:
     @staticmethod
@@ -36,7 +42,12 @@ class TTSService:
             if not speaker:
                 raise ValueError("Invalid speaker ID")
 
-            audio_16bit, sample_rate = get_tts_wav(
+            model_version = req.version if req.version else "default"
+            if model_version not in speakers:
+                logger.info("加载VITS模型: "+model_version)
+                speakers[model_version] = TTS_Speaker(model_version)
+
+            audio_16bit, sample_rate = speakers.get(model_version).get_tts_wav(
                 ref_wav_path=os.path.join(config.REF_VOICE_DIR, speaker.voicefile),
                 prompt_text=speaker.text,
                 prompt_language=speaker.lang,
@@ -57,7 +68,9 @@ class TTSService:
                 speaker_id=req.speaker_id,
                 top_k=req.top_k,
                 top_p=req.top_p,
-                temperature=req.temperature
+                temperature=req.temperature,
+                model_version=model_version,
+                created_at=datetime.now(timezone.utc) + timedelta(hours=8)
             )
             session.add(new_record)
             session.commit()
@@ -82,6 +95,26 @@ class TTSService:
             session.query(TTSRecord).filter(TTSRecord.id == record.id).delete()
             session.commit()
         session.close()
+
+    @staticmethod
+    def delete_record(id:str):
+        session = SessionLocal()
+        try:
+            record = session.query(TTSRecord).filter(TTSRecord.id == id).first()
+            if record:
+                filepath = os.path.join(config.GEN_VOICE_DIR, record.id)
+                print("deleting ", filepath)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                session.query(TTSRecord).filter(TTSRecord.id == record.id).delete()
+                session.commit()
+            return True
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
     
     @staticmethod
     def get_records(page: int, page_size: int):

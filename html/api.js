@@ -42,7 +42,7 @@ export const getTTSRecords = async (page = 1, pageSize = 1) => {
 };
 
 // Create TTS
-export const createTTS = async (text, lang, speakerId, topK = 10, topP = 0.95, temperature = 0.8) => {
+export const createTTS = async (text, lang, speakerId, topK = 10, topP = 0.95, temperature = 0.8, version="") => {
   try {
     validateText(text);
     validateLanguage(lang);
@@ -52,7 +52,7 @@ export const createTTS = async (text, lang, speakerId, topK = 10, topP = 0.95, t
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text, lang, speaker_id: parseInt(speakerId), top_k: topK, top_p: topP, temperature }),
+      body: JSON.stringify({ text, lang, speaker_id: parseInt(speakerId), top_k: topK, top_p: topP, temperature, version})
     });
     return await handleError(response);
   } catch (error) {
@@ -61,7 +61,7 @@ export const createTTS = async (text, lang, speakerId, topK = 10, topP = 0.95, t
 };
 
 // Add Speaker
-export const addSpeaker = async (name, voiceFile, text, lang, description) => {
+export const addSpeaker = async (name, voiceFile, text, lang, description, version="") => {
   try {
     if (typeof name !== 'string' || name.trim() === '') {
       throw new Error('Speaker name must be a non-empty string');
@@ -73,6 +73,7 @@ export const addSpeaker = async (name, voiceFile, text, lang, description) => {
     formData.append('voicefile', voiceFile);
     formData.append('text', text);
     formData.append('lang', lang);
+    formData.append('version', version)
     if (description) {
       formData.append('description', description);
     }
@@ -127,6 +128,16 @@ export const getSpeaker = async (id) => {
   }
 };
 
+
+export const deleteRecord = async (id) => {
+  if(USE_SAMPLES) {return}
+
+  try{
+    const response = await fetch(`${API_BASE_URL}/record?id=${id}`, {method: "DELETE"});
+  } catch (err) {
+    console.error('Error fetching speakers:', err);
+  }
+}
 export const updateSpeaker = async (spk_id, name, voiceFile, text, lang, description) => {
   try {
     if (typeof name !== 'string' || name.trim() === '') {
@@ -167,6 +178,15 @@ export const getVoiceFile = (type, id) => {
     console.error('Error fetching voice file:', error);
   }
 };
+
+export const getVersions = async () => {
+  try{
+    const response = await fetch(`${API_BASE_URL}/versions`, {method: "GET"});
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching versions:', error);
+  }
+}
 
 // Example usage
 // (async () => {

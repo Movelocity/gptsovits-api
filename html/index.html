@@ -72,7 +72,6 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      padding: 10px;
     }
     .flex-row {
       display: flex;
@@ -88,6 +87,14 @@
     .pagination li a.current {
       background-color: #1976d2; /* Example active color */
       color: white; /* Example text color */
+      border-radius: 2px;
+    }
+    #create-tts {
+      padding: 10px;
+    }
+    input:-webkit-autofill {
+      -webkit-text-fill-color: #FFFFFF !important;
+      -webkit-box-shadow: 0 0 0 1000px #212121 inset !important;
     }
   </style>
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
@@ -119,7 +126,6 @@
 
     <section id="create-tts">
       <div class="row">
-
         <section id="speakers-session" class="col s12 m4">
           <div class="spk-header">Select Speaker</div>
           <ul id="speaker-list" class="row"><!-- Speakers will be inserted here --></ul>
@@ -141,15 +147,15 @@
 
           <div class="row">
             <div class="input-field col s12 m4">
-              <input id="top-k" type="number" min="0" max="20" value="5" class="white-text">
+              <input id="top-k" type="number" min="0" max="20" value="7" class="white-text">
               <label for="top-k">Top K</label>
             </div>
             <div class="input-field col s12 m4">
-              <input id="top-p" type="number" min="0" max="1" step="0.01" value="0.95" class="white-text">
+              <input id="top-p" type="number" min="0" max="1" step="0.01" value="0.9" class="white-text">
               <label for="top-p">Top P</label>
             </div>
             <div class="input-field col s12 m4">
-              <input id="temperature" type="number" min="0" max="1" step="0.01" value="0.8" class="white-text">
+              <input id="temperature" type="number" min="0" max="1" step="0.01" value="0.7" class="white-text">
               <label for="temperature">Temperature</label>
             </div>
           </div>
@@ -167,18 +173,35 @@
               </select>
               <input class="hide" id="tts-speaker-id" type="number"/>
             </div>
-            <div class="col s6">
-              <button class="btn blue waves-effect waves-purple hide-on-small-only" type="submit">
+            <div class="col s12 m6">
+              <label for="tts-version">使用模型</label>
+              <select id="tts-version" class="browser-default grey darken-4 white-text">
+                <option value="auto" selected>Auto</option>
+                <option value="all_zh">Chinese (All)</option>
+                <option value="en">English</option>
+                <option value="all_ja">Japanese (All)</option>
+                <option value="zh">Chinese</option>
+                <option value="ja">Japanese</option>
+              </select>
+            </div>
+          </div>
+          <input class="hide" id="tts-speaker-id" type="number"/>
+          <div class="row">
+            <div class="col s12 m6">
+              <div class="progress hide" id="tts-progress">
+                <div class="indeterminate"></div>
+              </div>
+              <button class="btn waves-effect waves-purple hide-on-small-only" type="submit">
                 Text to Speech
                 <i class="material-icons right">send</i>
               </button>
-              <button class="btn blue waves-effect waves-purple hide-on-med-and-up" type="submit">
+              <button class="btn waves-effect waves-purple hide-on-med-and-up" type="submit">
                 TTS
                 <i class="material-icons right">send</i>
               </button>
             </div>
+            <audio id="tts-result" class="col s6 hide" controls></audio>
           </div>
-          <audio id="tts-result" class="display-none" controls></audio>
         </form>
       </div>
     </section>
@@ -188,23 +211,23 @@
       <div id="tts-records-container" class="row">
         <!-- TTS record cards will be inserted here -->
       </div>
-      <div class="pagination-container center-align">
-        <a id="t-prev-page" class="waves-effect blue-grey darken-3"><i class="material-icons right">keyboard_arrow_left</i></a>
+      <!-- <div style="display:flex;flex-direction: row; justify-content: center; align-items: center;">
+        <a id="t-prev-page"><i class="material-icons right">keyboard_arrow_left</i></a>
         <span id="t-page-info" class="white-text"></span>
-        <a id="t-next-page" class="waves-effect blue-grey darken-3"><i class="material-icons right">keyboard_arrow_right</i></a>
-      </div>
+        <a id="t-next-page"><i class="material-icons right">keyboard_arrow_right</i></a>
+      </div> -->
 
-      <!-- <ul id="records-pagination" class="pagination center-align">
-        <li><a href="#!"><i class="material-icons stepper">chevron_left</i></a></li>
-        <span style="cursor: pointer;">
+      <ul id="records-pagination" class="pagination center-align">
+        <a href="#!" id="record-page-prev"><i class="material-icons stepper">chevron_left</i></a>
+        <span style="cursor: pointer;" id="pagers">
           <li><a href="#!" id="record-p1">1</a></li>
           <li><a href="#!" id="record-p2">2</a></li>
           <li><a href="#!" id="record-p3">3</a></li>
           <li><a href="#!" id="record-p4">4</a></li>
           <li><a href="#!" id="record-p5">5</a></li>
         </span>
-        <li><a href="#!"><i class="material-icons stepper">chevron_right</i></a></li>
-      </ul> -->
+        <a href="#!" id="record-page-next"><i class="material-icons stepper">chevron_right</i></a>
+      </ul>
     </section>
   </main>
  
@@ -214,7 +237,7 @@
       <form id="edit-spk-form">
         <div class="row">
           <div class="input-field col s12 l6">
-            <input id="edit-spk-name" type="text" class="white-text" required>
+            <input id="edit-spk-name" type="text" required>
             <label for="edit-spk-name">Speaker Name</label>
           </div>
           <div class="input-field col s12 l6">
@@ -262,6 +285,17 @@
       <input class="hide" id="edit-spk-id", type="number"/>
       <a href="#!" class="modal-close waves-effect waves-green btn grey">Cancel</a>
       <button type="submit" form="edit-spk-form" class="waves-effect waves-green btn">Update</button>
+    </div>
+  </div>
+
+  <div id="commit-del-record" class="modal grey darken-4 white-text">
+    <div class="modal-content">
+      <h4>Delete record?</h4>
+      <div id="del-record-info">123131.mp3</div>
+    </div>
+    <div class="modal-footer grey darken-4 white-text">
+      <a href="#!" class="modal-close waves-effect waves-green btn grey">Cancel</a>
+      <button data-target="" type="submit" id="del-record-submit" class="waves-effect waves-green btn red">Delete</button>
     </div>
   </div>
 

@@ -32,27 +32,82 @@ def roll_valid_name(filename, exist_names):
         count += 1  # Increment the counter for the next iteration
     return filename
 
+import librosa
+import soundfile as sf
+import numpy as np
+
+def process_audio(upload_file, target_dir, min_duration=1, max_duration=10, sr=16000):
+    file_name = upload_file.filename
+    file_path = os.path.join(target_dir, file_name)
+    wav, sr = librosa.load(upload_file.file, sr=sr)
+    duration = len(wav) / sr
+
+    if duration < min_duration or duration > max_duration:
+        raise ValueError("Audio duration must be between 1s and 10s")
+
+    # Adjust audio duration
+    if 1 <= duration < 1.4:
+        silence = np.zeros(int(sr * 0.2))
+        wav = np.concatenate([wav, silence, wav, silence, wav])
+    elif duration < 3:
+        silence_duration = 3 - duration + 0.1
+        silence = np.zeros(int(sr * silence_duration))
+        wav = np.concatenate([wav, silence, wav])
+
+    # Save processed audio
+    sf.write(file_path, wav, sr)
+    return file_name, duration
+
 class SpeakerService:
     @staticmethod
-    def add_speaker(name: str, upload_file: UploadFile, text: str, lang: str, description:str) -> dict:
+    def process_audio(upload_file: UploadFile) -> tuple:
+        """
+        Process the uploaded audio file to ensure it meets the required duration.
+        Returns the processed audio data and the adjusted text.
+        """
+        file_name = upload_file.filename
+        voice_file = roll_valid_name(file_name, os.listdir(config.REF_VOICE_DIR))
+        file_path = os.path.join(config.REF_VOICE_DIR, voice_file)
+        wav, sr = librosa.load(upload_file.file, sr=16000)
+        duration = len(wav) / sr
+
+        if duration < 1 or duration > 10:
+            raise ValueError("音频时长需要 1s ~ 10s")
+
+        text_multiplier = 1
+        if 1 <= duration < 1.4:
+            silence = np.zeros(int(sr * 0.3))
+            wav = np.concatenate([wav, silence, wav, silence, wav])
+            text_multiplier = 3
+        elif duration < 3:
+            silence = np.zeros(int(sr * 0.3))
+            wav = np.concatenate([wav, silence, wav])
+            text_multiplier = 2
+
+        # Save the processed audio
+        sf.write(file_path, wav, sr)
+
+        return wav, text_multiplier
+
+    @staticmethod
+    def add_speaker(name: str, upload_file: UploadFile, text: str, lang: str, description: str, model_version:str) -> dict:
         session = SessionLocal()
         data = {}
         try:
-            file_name = upload_file.filename
-            voice_file = roll_valid_name(file_name, os.listdir(config.REF_VOICE_DIR))
-            with open(os.path.join(config.REF_VOICE_DIR, voice_file), "wb") as f:
-                f.write(upload_file.file.read())
+            wav, text_multiplier = SpeakerService.process_audio(upload_file)
+            processed_text = text * text_multiplier
 
             new_speaker = SpeakerInfo(
                 name=name,
-                voicefile=voice_file,
-                text=text,
+                voicefile=upload_file.filename,  # You can also pass the processed voice_file here
+                text=processed_text,
                 lang=lang,
-                description=description
+                description=description,
+                model_version=model_version
             )
             session.add(new_speaker)
             session.commit()
-            data = session.query(SpeakerInfo).filter(SpeakerInfo.voicefile == voice_file).first().to_dict()
+            data = session.query(SpeakerInfo).filter(SpeakerInfo.voicefile == new_speaker.voicefile).first().to_dict()
         except Exception as e:
             session.rollback()
             print(e)
@@ -64,10 +119,11 @@ class SpeakerService:
     def update_speaker(
         spk_id: str, 
         name: str,
-        upload_file: UploadFile=None, 
-        text: str=None, 
-        lang: str=None, 
-        description:str=None
+        upload_file: UploadFile = None, 
+        text: str = None, 
+        lang: str = None, 
+        description: str = None,
+        model_version: str = None
     ):
         session: Session = SessionLocal()
         try:
@@ -80,19 +136,23 @@ class SpeakerService:
                 old_voicefile_path = os.path.join(config.REF_VOICE_DIR, speaker.voicefile)
                 if os.path.exists(old_voicefile_path):
                     os.remove(old_voicefile_path)
-                file_name = upload_file.filename
-                new_voicefile = roll_valid_name(file_name, os.listdir(config.REF_VOICE_DIR))
-                with open(os.path.join(config.REF_VOICE_DIR, new_voicefile), 'wb') as f:
-                    f.write(upload_file.file.read())  # Replace with actual file handling logic
-            
-                speaker.voicefile = new_voicefile
-            
+
+                wav, text_multiplier = SpeakerService.process_audio(upload_file)
+                processed_text = text * text_multiplier
+                new_voicefile = roll_valid_name(upload_file.filename, os.listdir(config.REF_VOICE_DIR))
+                speaker.voicefile = new_voicefile  # Update the voicefile name
+                sf.write(os.path.join(config.REF_VOICE_DIR, new_voicefile), wav, 16000)
+
+            if name is not None:
+                speaker.name = name
             if text is not None:
-                speaker.text = text
+                speaker.text = processed_text if upload_file else text
             if lang is not None:
                 speaker.lang = lang 
             if description is not None:
                 speaker.description = description
+            if model_version is not None:
+                speaker.model_version = model_version
             session.commit()
             return True
         except:

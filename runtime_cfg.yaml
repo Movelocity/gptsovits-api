@@ -1,8 +1,7 @@
 paths:
-  gpt_path: "pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"
-  sovits_path: "pretrained_models/s2G488k.pth"
-  bert_path: "pretrained_models/chinese-roberta-wwm-ext-large"
-  cnhubert_base_path: "pretrained_models/chinese-hubert-base"
+  model_root: "D:/weights/gpt-sovits"
+
+proxy: "http://localhost:7890"
 
 settings:
   infer_tts_port: 8082

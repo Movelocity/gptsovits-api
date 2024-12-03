@@ -9,6 +9,7 @@ class TTSRequest(BaseModel):
     - top_k: int = 10
     - top_p: float = 0.95
     - temperature: float = 0.8
+    - model_version: str = ""
     """
     text: str
     lang: str
@@ -16,6 +17,7 @@ class TTSRequest(BaseModel):
     top_k: int = 10
     top_p: float = 0.95
     temperature: float = 0.8
+    version: str = ""
 
 class SpeakerRequest(BaseModel):
     name: str
@@ -23,3 +25,4 @@ class SpeakerRequest(BaseModel):
     text: str
     lang: str
     description: str = ""
+    version: str = ""

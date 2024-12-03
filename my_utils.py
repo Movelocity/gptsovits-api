@@ -1,6 +1,7 @@
 import ffmpeg
 import numpy as np
-
+import torch
+from module.mel_processing import spectrogram_torch
 
 def load_audio(file, sr):
     try:
@@ -19,3 +20,18 @@ def load_audio(file, sr):
         raise RuntimeError(f"Failed to load audio: {e}")
 
     return np.frombuffer(out, np.float32).flatten()
+
+def get_spec(cfg, filename: str) -> torch.Tensor:
+    """获取频谱图"""
+    audio = load_audio(filename, int(cfg.sampling_rate))
+    audio_norm = torch.FloatTensor(audio)
+    audio_norm = audio_norm.unsqueeze(0)
+    spec = spectrogram_torch(
+        audio_norm,
+        cfg.filter_length,
+        cfg.sampling_rate,
+        cfg.hop_length,
+        cfg.win_length,
+        center=False,
+    )
+    return spec

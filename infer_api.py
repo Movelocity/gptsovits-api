@@ -4,13 +4,13 @@ from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from common import infer_tts_port
+from common import infer_tts_port, shared
 from service.tts import TTSService
 from service.speaker import SpeakerService
 from service.schema import TTSRequest
 from service.config import config
 from service.db import Base, engine
-from io import BytesIO
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -25,7 +25,9 @@ async def read_root():
 @app.get("/html")
 async def read_index():
     return FileResponse("html/index.html")
+
 import math
+
 @app.get("/records")
 async def get_tts_records(page: int, page_size: int):
     """return list of objects in json"""
@@ -38,6 +40,13 @@ async def get_tts_records(page: int, page_size: int):
         "total": count
     }
 
+@app.delete("/record")
+async def delete_record(
+    id: str = Query(alias="id")
+):
+    success = TTSService.delete_record(id)
+    return {"msg": "ok" if success else "failed"}
+
 @app.post("/tts")
 async def create_tts(request: TTSRequest):
     """response {"filename": filename}, if err there won't be filename field"""
@@ -49,10 +58,11 @@ async def add_speaker(
     voicefile: UploadFile = File(...),
     text: str = Form(...),
     lang: str = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    version: str = Form("")
 ):  
     try:
-        new_speaker = SpeakerService.add_speaker(name=name, upload_file=voicefile, text=text, lang=lang, description=description)
+        new_speaker = SpeakerService.add_speaker(name=name, upload_file=voicefile, text=text, lang=lang, description=description, model_version=version)
         return {"id": new_speaker["id"], "name": new_speaker["name"]}
     except Exception as e:
         print(e)
@@ -65,15 +75,20 @@ async def add_speaker(
     voicefile: UploadFile = File(None),
     text: str = Form(...),
     lang: str = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    version: str = Form("")
 ):  
     print("voicefile", voicefile)
     try:
-        success = SpeakerService.update_speaker(spk_id=spk_id, name=name, upload_file=voicefile, text=text, lang=lang, description=description)
+        success = SpeakerService.update_speaker(spk_id=spk_id, name=name, upload_file=voicefile, text=text, lang=lang, description=description, model_version=version)
         return {"success": success}
     except Exception as e:
         print(e)
         return {"id": 0, "name": "failed"}
+
+@app.get("/versions")
+async def get_versions():
+    return list(shared.speaker_dict.keys())
 
 @app.get("/speaker")
 async def get_speaker(
@@ -116,7 +131,7 @@ async def get_voicefile(
     return FileResponse(file_path)
 
 import uuid
-from speech2text import speech2text
+from speech2text import speech2text, speech2text_fast
 
 @app.post("/asr")
 async def asr(
@@ -126,7 +141,8 @@ async def asr(
     filepath = f"TEMP/{uuid.uuid4()}"
     with open(filepath, 'wb') as f:
         f.write(voicefile.file.read())
-    text = speech2text(filepath)
+    # text = speech2text(filepath)
+    text = speech2text_fast(filepath)
     os.remove(filepath)
     return {"data": text}
 

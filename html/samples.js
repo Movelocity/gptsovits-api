@@ -14,18 +14,6 @@ export const records_sample = `{
         "speaker_desc": "银翼"
     },
     {
-        "id": "61365f15-e4ba-4b36-b68b-c20c70f0daf8.mp3",
-        "text": "大姐你回来啦，天气这么好，一起多逛逛吧！",
-        "lang": "auto",
-        "speaker_id": "4",
-        "top_k": 10,
-        "top_p": 0.95,
-        "temperature": 0.8,
-        "created_at": "2024-11-19T01:56:32.707425",
-        "speaker_name": "Bronya",
-        "speaker_desc": "tsuntere"
-    },
-    {
         "id": "e2452089-b1ee-4268-a138-51835f4fd761.mp3",
         "text": "大姐你回来啦，天气这么好，一起多逛逛吧！",
         "lang": "auto",
@@ -48,66 +36,6 @@ export const records_sample = `{
         "created_at": "2024-11-19T01:56:32.707425",
         "speaker_name": "Bronya",
         "speaker_desc": "银翼"
-    },
-    {
-        "id": "f3b9d33e-c57b-4c99-8f6e-6a93662e922b.mp3",
-        "text": "我他妈的来了，你们这帮学生，就是群鸡巴！你们记住了嗷，我就在折纸大学骂你们！",
-        "lang": "auto",
-        "speaker_id": "5",
-        "top_k": 5,
-        "top_p": 0.95,
-        "temperature": 0.8,
-        "created_at": "2024-11-18T23:41:08.656871",
-        "speaker_name": "Bronya",
-        "speaker_desc": "银翼"
-    },
-    {
-        "id": "3183240f-20d9-45ad-9d6b-d65bc7b54b09.mp3",
-        "text": "我他妈的来了，你们这帮学生，就是群鸡巴！你们记住了嗷，我就在折纸大学骂你们！",
-        "lang": "auto",
-        "speaker_id": "5",
-        "top_k": 5,
-        "top_p": 0.95,
-        "temperature": 0.5,
-        "created_at": "2024-11-18T23:41:08.656871",
-        "speaker_name": "Bronya",
-        "speaker_desc": "银翼"
-    },
-    {
-        "id": "eae9b33b-cc83-4f31-9b34-3e2796f16892.mp3",
-        "text": "我他妈的来了，你们这帮学生，就是群鸡巴！你们记住了嗷，我就在折纸大学骂你们！",
-        "lang": "auto",
-        "speaker_id": "4",
-        "top_k": 10,
-        "top_p": 0.95,
-        "temperature": 0.8,
-        "created_at": "2024-11-18T22:51:34.835232",
-        "speaker_name": "Bronya",
-        "speaker_desc": "tsuntere"
-    },
-    {
-        "id": "9fb9d816-42aa-4d64-bf73-b1cf5152fe6f.mp3",
-        "text": "我他妈的来了，你们这帮学生，就是群鸡巴！你们记住了嗷，我就在折纸大学骂你们！",
-        "lang": "auto",
-        "speaker_id": "4",
-        "top_k": 5,
-        "top_p": 0.95,
-        "temperature": 0.8,
-        "created_at": "2024-11-18T22:51:34.835232",
-        "speaker_name": "Bronya",
-        "speaker_desc": "tsuntere"
-    },
-    {
-        "id": "36f3997e-086d-49f5-a128-c9e49fbbefae.mp3",
-        "text": "我他妈的来了，你们这帮学生，就是群鸡巴！你们记住了嗷，我就在折纸大学骂你们！",
-        "lang": "auto",
-        "speaker_id": "4",
-        "top_k": 5,
-        "top_p": 0.95,
-        "temperature": 0.5,
-        "created_at": "2024-11-18T22:51:34.835232",
-        "speaker_name": "Bronya",
-        "speaker_desc": "tsuntere"
     }
 ],
 "page": 1,

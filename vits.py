@@ -11,10 +11,9 @@ from module.models import SynthesizerTrn
 from AR.models.t2s_lightning_module import Text2SemanticLightningModule
 from text import cleaned_text_to_sequence
 from text.cleaner import clean_text
-from module.mel_processing import spectrogram_torch
-from my_utils import load_audio
+from my_utils import get_spec
 
-import soundfile as sf
+# import soundfile as sf
 import LangSegment
 import librosa
 from i18n.i18n import I18nAuto
@@ -25,13 +24,14 @@ from common import shared
 ssl_model: nn.Module = None
 tokenizer = None
 bert_model: nn.Module = None
-vq_model: nn.Module = None
-t2s_model: nn.Module = None
-hps: DictToAttrRecursive = None
+
 
 # 0.3 秒空白语音，用于衔接
-zero_wav: np.ndarray = None
+# zero_wav: np.ndarray = None
 
+"""
+ssl 和 bert 模型可以多个 speaker 公用
+"""
 def get_ssl_model(hubert_path: str=None, force_reload=False) -> cnhubert.CNHubert:
     global ssl_model
     
@@ -58,125 +58,6 @@ def get_bert_model(bert_path: str=None, force_reload=False) -> AutoModelForMaske
                 bert_model = bert_model.half()
             bert_model = bert_model.to(shared.device)
     return bert_model
-
-def get_t2s_model(gpt_path: str=None, force_reload=False):
-    global t2s_model
-    if gpt_path is None:
-        gpt_path = shared.gpt_path
-    if t2s_model is None:
-        dict_s1 = torch.load(gpt_path, map_location="cpu")
-        config = dict_s1["config"]
-        shared.max_sec = config["data"]["max_sec"]
-        with timer("GPT 加载"):
-            t2s_model = Text2SemanticLightningModule(config, "****", is_train=False).eval()
-            t2s_model.load_state_dict(dict_s1["weight"])
-            if shared.is_half == True:
-                t2s_model = t2s_model.half()
-            t2s_model = t2s_model.to(shared.device)
-        total = sum([param.nelement() for param in t2s_model.parameters()])
-        print("GPT 模块参数量: %.2fM" % (total / 1e6))
-    return t2s_model
-
-
-
-def get_hps(sovits_path: str=None, force_reload=False) -> DictToAttrRecursive:
-    global hps
-    if sovits_path is None:
-        sovits_path = shared.sovits_path
-    if hps is None:
-        dict_s2 = torch.load(sovits_path, map_location="cpu")
-        hps = DictToAttrRecursive(dict_s2["config"])
-        hps.model.semantic_frame_rate = "25hz"
-    return hps
-
-def get_sovits_model(sovits_path: str=None, force_reload=False) -> SynthesizerTrn:
-    global vq_model, hps, zero_wav
-
-    if sovits_path is None:
-        sovits_path = shared.sovits_path
-    hps = get_hps(sovits_path)
-    if vq_model is None:
-        with timer("VITS2 加载"):
-            vq_model = SynthesizerTrn(
-                hps.data.filter_length // 2 + 1,
-                hps.train.segment_size // hps.data.hop_length,
-                n_speakers=hps.data.n_speakers,
-                **hps.model
-            ).eval()
-            if ("pretrained" not in sovits_path):
-                del vq_model.enc_q
-            dict_s2 = torch.load(sovits_path, map_location="cpu")
-            vq_model.load_state_dict(dict_s2["weight"], strict=False)
-
-            if shared.is_half == True:
-                vq_model = vq_model.half()
-            vq_model.to(shared.device)
-    return vq_model
-    
-
-# def change_gpt_weights(gpt_path: str):
-#     global t2s_model
-#     dict_s1 = torch.load(gpt_path, map_location="cpu")
-#     config = dict_s1["config"]
-#     # model_dict['max_sec'] = config["data"]["max_sec"]
-
-#     with timer("加载 GPT 模块"):
-#         t2s_model = Text2SemanticLightningModule(config, "****", is_train=False).eval()
-#         t2s_model.load_state_dict(dict_s1["weight"])
-#         if shared.is_half == True:
-#             t2s_model = t2s_model.half()
-#         t2s_model = t2s_model.to(shared.device)
-
-#     total = sum([param.nelement() for param in t2s_model.parameters()])
-#     print("GPT 模块 参数量: %.2fM" % (total / 1e6))
-
-#     # model_dict['t2s_model'] = t2s_model
-
-
-def get_prompt(wav_path: str) -> torch.Tensor:
-    """获取参考语音的语义信息 return Tensor dtype=torch.int64"""
-    global zero_wav
-    hps = get_hps()
-    with torch.no_grad():
-        wav16k, sr = librosa.load(wav_path, sr=16000)
-        if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):
-            raise ValueError(i18n("参考音频在3~10秒范围外，请更换！"))
-        use_dtype = torch.float16 if shared.is_half == True else torch.float32
-        wav16k = torch.from_numpy(wav16k).to(device=shared.device, dtype=use_dtype)
-        # zero_wav_torch = torch.zeros(
-        #     int(hps.data.sampling_rate * 0.3),  # 0.3 秒
-        #     dtype=use_dtype,
-        #     device=shared.device
-        # )
-        zero_wav = np.zeros(
-            int(hps.data.sampling_rate * 0.3),  # 0.3 秒
-            dtype=np.float16 if shared.is_half == True else np.float32,
-        )
-        zero_wav_torch = torch.from_numpy(zero_wav).to(device=shared.device, dtype=use_dtype)
-        wav16k = torch.cat([wav16k, zero_wav_torch])
-        ssl_content = get_ssl_model().model(wav16k.unsqueeze(0))["last_hidden_state"].transpose(1, 2)  # .float()
-        # print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len # [1, 768, 280]
-
-        codes = get_sovits_model().extract_latent(ssl_content)
-        prompt_semantic = codes[0, 0].unsqueeze(0).to(shared.device)
-        # print(f"> voice prompt shape: {prompt_semantic.shape}")  # [1, 140]
-    return prompt_semantic
-
-
-def get_spec(cfg, filename: str) -> torch.Tensor:
-    """获取频谱图"""
-    audio = load_audio(filename, int(cfg.sampling_rate))
-    audio_norm = torch.FloatTensor(audio)
-    audio_norm = audio_norm.unsqueeze(0)
-    spec = spectrogram_torch(
-        audio_norm,
-        cfg.filter_length,
-        cfg.sampling_rate,
-        cfg.hop_length,
-        cfg.win_length,
-        center=False,
-    )
-    return spec
 
 ############ bert processing ##################
 
@@ -319,7 +200,6 @@ def validate_lang(lang):
         return False
     return True
 
-
 def process_prompt_text(prompt_text, prompt_language, ref_free):
     if not ref_free:
         prompt_text = prompt_text.strip("\n")
@@ -349,78 +229,182 @@ def process_runtime_text(text, text_language, ref_free, bert1, prompt_phonemes):
 
     return bert_feat, all_phoneme_ids, phonemes_torch
 
-def get_ref_spec(ref_wav_path) -> torch.Tensor:
-    refer_spec = get_spec(hps.data, ref_wav_path)  # .to(device)
-    if shared.is_half == True:
-        refer_spec = refer_spec.half()
-    return refer_spec.to(shared.device)
 
-def get_tts_wav(
-    ref_wav_path:str, 
-    prompt_text:str, 
-    prompt_language:str, 
-    text:str, 
-    text_language:str, 
-    cut_name="none", 
-    top_k=20, 
-    top_p=0.6, 
-    temperature=0.6, 
-    ref_free=False
-):
-    if prompt_text is None or len(prompt_text) == 0:
-        ref_free = True
+import logging
 
-    if not validate_lang(prompt_language): return
-    if not validate_lang(text_language): return
+logger = logging.getLogger(__name__)
 
-    prompt_phonemes, bert1 = process_prompt_text(prompt_text, prompt_language, ref_free)
+from common import load_yaml
+class Speaker:
+    def __init__(self, model_version):
+        self.name = model_version
 
-    voice_prompt = get_prompt(ref_wav_path)
-    refer_spec = get_ref_spec(ref_wav_path)
+        self.hps: DictToAttrRecursive = None
+        self.vq_model: SynthesizerTrn = None
+        self.t2s_model: Text2SemanticLightningModule = None
 
-    texts = split_text(text, cut_name)
-    audio_opt = []
-    for text in texts:
-        # 解决输入目标文本的空行导致报错的问题
-        if (len(text.strip()) == 0): continue
+        self.validated = False
+        self.validate()
 
-        bert_feat, all_phoneme_ids, phonemes_torch = process_runtime_text(
-            text, text_language, ref_free, bert1, prompt_phonemes
-        )
+        self.zero_wave: np.ndarray = None
+        self.device = shared.device
+        self.is_half = shared.is_half
 
-        all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(shared.device)
+    def validate(self):
+        speaker_path = os.path.join(shared.model_root, shared.model_config['speakers'], self.name)
+        if os.path.exists(speaker_path):
+            logger.info("validate: "+speaker_path)
+            
+            speaker_config = load_yaml(os.path.join(speaker_path, "config.yaml"))
 
-        with torch.no_grad():
-            pred_semantic, idx = get_t2s_model().model.infer_panel(
-                x=all_phoneme_ids,
-                x_lens=all_phoneme_len,
-                prompts=None if ref_free else voice_prompt,
-                bert_feature=bert_feat,
-                top_k=top_k,
-                top_p=top_p,
-                temperature=temperature,
-                early_stop_num=shared.hz * shared.max_sec
+            self.gpt_path = os.path.join(speaker_path, speaker_config['gpt'])
+            self.sovits_path = os.path.join(speaker_path, speaker_config['sovits'])
+
+            self.validated = True
+            logger.info(self.gpt_path)
+            logger.info(self.sovits_path)
+        
+    def load_sovits_model(self, force_reload=False) -> SynthesizerTrn:
+        # global vq_model, hps
+
+        if self.hps is None or force_reload:
+            dict_s2 = torch.load(self.sovits_path, map_location="cpu")
+            self.hps = DictToAttrRecursive(dict_s2["config"])
+            self.hps.model.semantic_frame_rate = "25hz"
+    
+        if self.vq_model is None or force_reload:
+            with timer("VITS2 加载"):
+                self.vq_model = SynthesizerTrn(
+                    self.hps.data.filter_length // 2 + 1,
+                    self.hps.train.segment_size // self.hps.data.hop_length,
+                    n_speakers=self.hps.data.n_speakers,
+                    **self.hps.model
+                ).eval()
+                # if ("pretrained" not in self.sovits_path):
+                #     del vq_model.enc_q
+                dict_s2 = torch.load(self.sovits_path, map_location="cpu")
+                self.vq_model.load_state_dict(dict_s2["weight"], strict=False)
+
+                if shared.is_half == True:
+                    self.vq_model = self.vq_model.half()
+                self.vq_model.to(shared.device)
+
+    def load_t2s_model(self, force_reload=False):
+        if self.t2s_model is None or force_reload:
+            dict_s1 = torch.load(self.gpt_path, map_location="cpu")
+            config = dict_s1["config"]
+            shared.max_sec = config["data"]["max_sec"]
+            logger.info(f"max_sec: {shared.max_sec}")
+            with timer("GPT 加载"):
+                self.t2s_model = Text2SemanticLightningModule(config, "****", is_train=False).eval()
+                self.t2s_model.load_state_dict(dict_s1["weight"])
+                if shared.is_half == True:
+                    self.t2s_model = self.t2s_model.half()
+                self.t2s_model = self.t2s_model.to(shared.device)
+            total = sum([param.nelement() for param in self.t2s_model.parameters()])
+            logger.info("GPT 模块参数量: %.2fM" % (total / 1e6))
+
+
+    def get_prompt(self, wav_path:str) -> torch.Tensor:
+        """获取参考语音的语义信息 return Tensor dtype=torch.int64"""
+
+        with torch.no_grad(): 
+            fps = 16000
+            wav16k, sr = librosa.load(wav_path, sr=fps)
+            if (wav16k.shape[0] > fps*10 or wav16k.shape[0] < fps*3):
+                raise ValueError(i18n("参考音频在3~10秒范围外，请更换！"))
+            use_dtype = torch.float16 if self.is_half == True else torch.float32
+            wav16k = torch.from_numpy(wav16k).to(device=self.device, dtype=use_dtype)
+
+            self.zero_wav = np.zeros(
+                int(self.hps.data.sampling_rate * 0.3),  # 0.3 秒
+                dtype=np.float16 if self.is_half == True else np.float32,
             )
-        # print(pred_semantic.shape,idx)
-        pred_semantic = pred_semantic[:, -idx:].unsqueeze(0)  # .unsqueeze(0)  # mq 要多 unsqueeze 一次
-        
-        # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
-        audio = (
-            get_sovits_model().decode(
-                codes=pred_semantic, 
-                text=phonemes_torch, 
-                refer_spec=refer_spec
-            ).detach().cpu().numpy()[0, 0]
-        )  ### 试试重建不带上 prompt 的部分
-        
-        max_audio=np.abs(audio).max()  # 简单防止16bit爆音
-        if max_audio > 1: audio /= max_audio
-        audio_opt.append(audio)
-        audio_opt.append(zero_wav)
+            zero_wav_torch = torch.from_numpy(self.zero_wav).to(device=self.device, dtype=use_dtype)
+            wav16k = torch.cat([wav16k, zero_wav_torch])
+            ssl_content = get_ssl_model().model(wav16k.unsqueeze(0))["last_hidden_state"].transpose(1, 2)  # .float()
+            # print(f"> ssl_content.shape: {ssl_content.shape}") # batch, dim, seq_len # [1, 768, 280]
 
-    # 采样率, 16bit 音频
-    # return hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(np.int16)
-    audio_16bit = (np.concatenate(audio_opt, 0) * 32768).astype(np.int16)
-    return audio_16bit, hps.data.sampling_rate
-    # sf.write('TEMP/tmp.mp3', audio_16bit, hps.data.sampling_rate)
-    # return os.path.join(os.getcwd(), 'TEMP', 'tmp.mp3')
+            codes = self.vq_model.extract_latent(ssl_content)
+            prompt_semantic = codes[0, 0].unsqueeze(0).to(self.device)
+            # print(f"> voice prompt shape: {prompt_semantic.shape}")  # [1, 140]
+        return prompt_semantic
+
+    def get_ref_spec(self, ref_wav_path) -> torch.Tensor:
+        refer_spec = get_spec(self.hps.data, ref_wav_path)  # .to(device)
+        if self.is_half == True:
+            refer_spec = refer_spec.half()
+        return refer_spec.to(self.device)
+    
+    def get_tts_wav(
+        self,
+        ref_wav_path:str, 
+        prompt_text:str, 
+        prompt_language:str, 
+        text:str, 
+        text_language:str, 
+        cut_name="none", 
+        top_k=20, 
+        top_p=0.6, 
+        temperature=0.6, 
+        ref_free=False,
+    ):
+        self.load_sovits_model()
+        self.load_t2s_model()
+        if prompt_text is None or len(prompt_text) == 0:
+            ref_free = True
+
+        if not validate_lang(prompt_language): return
+        if not validate_lang(text_language): return
+
+        prompt_phonemes, bert1 = process_prompt_text(prompt_text, prompt_language, ref_free)
+
+        voice_prompt = self.get_prompt(ref_wav_path)
+        refer_spec = self.get_ref_spec(ref_wav_path)
+
+        texts = split_text(text, cut_name)
+        audio_opt = []
+        for text in texts:
+            # 解决输入目标文本的空行导致报错的问题
+            if (len(text.strip()) == 0): continue
+
+            bert_feat, all_phoneme_ids, phonemes_torch = process_runtime_text(
+                text, text_language, ref_free, bert1, prompt_phonemes
+            )
+
+            all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(shared.device)
+
+            with torch.no_grad():
+                pred_semantic, idx = self.t2s_model.model.infer_panel(
+                    x=all_phoneme_ids,
+                    x_lens=all_phoneme_len,
+                    prompts=None if ref_free else voice_prompt,
+                    bert_feature=bert_feat,
+                    top_k=top_k,
+                    top_p=top_p,
+                    temperature=temperature,
+                    early_stop_num=shared.hz * shared.max_sec
+                )
+            # print(pred_semantic.shape,idx)
+            pred_semantic = pred_semantic[:, -idx:].unsqueeze(0)  # .unsqueeze(0)  # mq 要多 unsqueeze 一次
+            
+            # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
+            audio = (
+                self.vq_model.decode(
+                    codes=pred_semantic, 
+                    text=phonemes_torch, 
+                    refer_spec=refer_spec
+                ).detach().cpu().numpy()[0, 0]
+            )  ### 试试重建不带上 prompt 的部分
+            
+            max_audio=np.abs(audio).max()  # 简单防止16bit爆音
+            if max_audio > 1: audio /= max_audio
+            audio_opt.append(audio)
+            audio_opt.append(self.zero_wav)
+
+        # 采样率, 16bit 音频
+        # return hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(np.int16)
+        audio_16bit = (np.concatenate(audio_opt, 0) * 32768).astype(np.int16)
+        return audio_16bit, self.hps.data.sampling_rate
+        # sf.write('TEMP/tmp.mp3', audio_16bit, hps.data.sampling_rate)
+        # return os.path.join(os.getcwd(), 'TEMP', 'tmp.mp3')

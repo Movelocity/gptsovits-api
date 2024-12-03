@@ -93,12 +93,12 @@ async function loadSpeakers() {
     li.innerHTML = `
     <div class="spk-info-row">
       <span class="spk-leading">
-        <a href="#!" class="btn-floating" onclick="playAudio('${speaker.id}', 'ref')">
+        <a href="#!" class="btn-floating blue" onclick="playAudio('${speaker.id}', 'ref')">
           <i class="material-icons">play_arrow</i>
         </a>
-        <span style="cursor:pointer" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || ' '})</span>
+        <span style="cursor:pointer;" onclick="selectTTSSpeaker(${speaker.id}, ${slot_id})">${speaker.name} (${speaker.description || ' '})</span>
       </span>
-      <a href="#!" class="btn" onclick="editSpeaker(${speaker.id})">
+      <a href="#!" class="btn-flat white-text" onclick="editSpeaker(${speaker.id})">
         <i class="material-icons">subject</i>
       </a>
     </div>
@@ -185,6 +185,7 @@ async function submitSpeaker(evt) {
       if(!result) throw new Error("编辑speaker失败");
     }
     // Optionally, you can clear the form fields after submission
+    setTimeout(()=>{loadSpeakers()}, 2000)
     $('#edit-spk-form').reset();
     M.Modal.getInstance($("#edit-spk-modal")).close()
     M.toast({html: 'Speaker added successfully!', classes: 'green'});
