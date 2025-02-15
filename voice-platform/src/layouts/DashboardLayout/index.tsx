@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout, Menu, theme } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -7,11 +7,11 @@ import {
   HistoryOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  AudioOutlined
 } from '@ant-design/icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { NavItem } from '../../types/layout';
 import styles from './styles.module.css';
+import classNames from 'classnames';
 
 const { Header, Sider, Content } = Layout;
 
@@ -34,27 +34,46 @@ const navItems: NavItem[] = [
     path: '/records',
     icon: <HistoryOutlined />
   },
-  {
-    key: 'tts',
-    label: 'Text to Speech',
-    path: '/tts',
-    icon: <AudioOutlined />
-  }
+  // {
+  //   key: 'tts',
+  //   label: 'Text to Speech',
+  //   path: '/tts',
+  //   icon: <AudioOutlined />
+  // }
 ];
 
 export const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { theme: appTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const { token } = theme.useToken();
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleMenuClick = (path: string) => {
     navigate(path);
+    if (isMobile) {
+      setCollapsed(true);
+    }
+  };
+
+  const handleOverlayClick = () => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', width: 'calc(100vw - 18px)' }} className={classNames({[styles.siderCollapsed]: collapsed})}>
       <Sider
         trigger={null}
         collapsible
@@ -75,6 +94,12 @@ export const DashboardLayout = () => {
           }))}
         />
       </Sider>
+      <div
+        className={classNames(styles.overlay, {
+          [styles.overlayHidden]: collapsed || !isMobile
+        })}
+        onClick={handleOverlayClick}
+      />
       <Layout style={{ width: '100%', background: token.colorBgContainer }} >
         <Header className={styles.header} style={{ background: appTheme.token.bgColorSecondary }}>
           {collapsed ? (
