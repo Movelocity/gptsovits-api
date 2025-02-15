@@ -15,7 +15,8 @@ const defaultTheme: ThemeConfig = {
     colorBgContainer: '#ffffff',
     colorBgElevated: '#f8fafc',
     colorBgLayout: '#f1f5f9',
-    
+    bgColorSecondary: '#f8fafc',
+
     // 文字色系
     colorText: 'rgba(0, 0, 0, 0.87)',
     colorTextSecondary: 'rgba(0, 0, 0, 0.6)',
@@ -44,6 +45,7 @@ const darkTheme: ThemeConfig = {
     colorBgContainer: '#1a1a1a',
     colorBgElevated: '#242424',
     colorBgLayout: '#2d2d2d',
+    bgColorSecondary: '#0f0f0f',
     
     // 文字色系
     colorText: 'rgba(255, 255, 255, 0.87)',
@@ -60,14 +62,14 @@ const darkTheme: ThemeConfig = {
 };
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: defaultTheme,
+  theme: darkTheme,
   toggleTheme: () => { }
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<ThemeConfig>(defaultTheme);
+  const [theme, setTheme] = useState<ThemeConfig>(darkTheme);
 
   const toggleTheme = () => {
     setTheme(prev => prev.mode === 'light' ? darkTheme : defaultTheme);

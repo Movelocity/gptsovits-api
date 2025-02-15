@@ -14,7 +14,8 @@ export interface ThemeConfig {
     colorBgContainer: string;
     colorBgElevated: string;
     colorBgLayout: string;
-    
+    bgColorSecondary: string;
+
     // 文字色系
     colorText: string;
     colorTextSecondary: string;

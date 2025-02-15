@@ -47,15 +47,15 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', background: appTheme.token.colorBgContainer }}>
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         theme={appTheme.mode}
         className={styles.sider}
+        style={{ background: appTheme.token.bgColorSecondary }}
       >
-        <div className={styles.logo} />
         <Menu
           theme={appTheme.mode}
           mode="inline"
@@ -68,7 +68,7 @@ export const DashboardLayout = () => {
           }))}
         />
       </Sider>
-      <Layout style={{ width: '100%' }}>
+      <Layout style={{ width: '100%' }} >
         <Header className={styles.header} style={{ background: token.colorBgContainer }}>
           {collapsed ? (
             <MenuUnfoldOutlined
@@ -82,7 +82,7 @@ export const DashboardLayout = () => {
             />
           )}
         </Header>
-        <Content className={styles.content}>
+        <Content className={styles.content} style={{ background: token.colorBgContainer }}>
           <Outlet />
         </Content>
       </Layout>

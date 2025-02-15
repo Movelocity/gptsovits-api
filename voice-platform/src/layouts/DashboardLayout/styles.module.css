@@ -30,10 +30,6 @@
   transition: color 0.3s;
 }
 
-.trigger:hover {
-  color: var(--ant-primary-color);
-}
-
 .content {
   margin: 24px 16px;
   padding: 24px;
@@ -43,10 +39,6 @@
 }
 
 /* Layout adjustments for the main content area */
-:global(.ant-layout) {
-  background: var(--ant-body-bg);
-}
-
 :global(.ant-layout-has-sider)> :global(.ant-layout) {
   margin-left: 200px;
   /* Width of expanded sider */
@@ -56,11 +48,6 @@
 :global(.ant-layout-has-sider)> :global(.ant-layout-sider-collapsed)+ :global(.ant-layout) {
   margin-left: 80px;
   /* Width of collapsed sider */
-}
-
-/* Dark theme specific styles */
-:global(.ant-layout-sider-dark) {
-  background: #001529;
 }
 
 :global(.ant-layout-sider-dark .ant-menu-dark) {
@@ -89,6 +76,5 @@
 }
 
 .glass {
-  background: var(--ant-body-bg);
   backdrop-filter: blur(4px);
 }

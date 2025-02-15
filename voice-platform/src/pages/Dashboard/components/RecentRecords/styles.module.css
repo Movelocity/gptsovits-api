@@ -9,9 +9,6 @@
   transition: background-color 0.3s;
 }
 
-.recentRecords :global(.ant-list-item:hover) {
-  background-color: var(--background-tertiary);
-}
 
 .text {
   display: -webkit-box;
@@ -24,8 +21,4 @@
 
 .date {
   font-size: 12px;
-}
-
-.hoverRow:hover {
-  background-color: var(--background-tertiary);
 }
