@@ -23,21 +23,11 @@
   border-radius: 8px;
 }
 
-.audioPlayer {
-  width: 100%;
-  margin-top: 2rem;
-  grid-column: 1 / -1;
-  padding: 1.5rem;
-  border-radius: 8px;
-}
-
 .speakerInfo {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 768px) {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Input, Button, message, Space, Form, InputNumber, Select } from 'antd';
+import { Card, Input, Button, Space, Form, InputNumber, Select, App } from 'antd';
 import { ttsService } from '../../services/api/ttsService';
 import { speakerService } from '../../services/api/speakerService';
 import type { Speaker } from '../../services/api/types';
 import styles from './styles.module.css';
-
+import { LANG_MODES } from '../../services/api/config';
 const { TextArea } = Input;
 
 interface TTSFormValues {
@@ -24,6 +24,8 @@ export const TTS: React.FC = () => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
   const [modelVersions, setModelVersions] = useState<string[]>([]);
+  const { message } = App.useApp();
+
   useEffect(() => {
     const fetchSpeaker = async () => {
       if (!speakerId) return;
@@ -44,6 +46,9 @@ export const TTS: React.FC = () => {
       const result = await ttsService.getMovelVersions();
       if (result.data) {
         setModelVersions(result.data);
+        form.setFieldsValue({
+          version: result.data[0],
+        });
       }
     };
 
@@ -111,9 +116,10 @@ export const TTS: React.FC = () => {
         onFinish={handleGenerate}
         initialValues={{
           text: '',
-          top_k: 50,
-          top_p: 0.8,
-          temperature: 1.0,
+          top_k: 10,
+          top_p: 0.95,
+          temperature: 0.8,
+          lang_mode: LANG_MODES[0],
         }}
         layout="vertical"
       >
@@ -121,8 +127,8 @@ export const TTS: React.FC = () => {
           <div className={styles.textInputSection}>
             {speaker && (
               <div className={styles.speakerInfo}>
-                <span>Selected speaker: <strong>{speaker.name}</strong></span>
-                {speaker.lang && <span>Language: {speaker.lang}</span>}
+                <strong>{speaker.name}</strong>
+                {speaker.lang && <span>{speaker.lang}</span>}
               </div>
             )}
             <Form.Item
@@ -135,6 +141,13 @@ export const TTS: React.FC = () => {
                 style={{ resize: 'vertical', minHeight: '200px' }}
               />
             </Form.Item>
+            {audioUrl && (
+              <div>
+                <audio controls src={audioUrl} style={{ width: '100%', height: '2.5rem', marginBottom: '1rem' }}>
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
             <Button
               type="primary"
               htmlType="submit"
@@ -147,8 +160,7 @@ export const TTS: React.FC = () => {
           </div>
 
           <div className={styles.advancedSection}>
-            <h3>Advanced Settings</h3>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space direction="vertical" style={{ width: '100%', rowGap: 4 }} size="middle">
               <Form.Item
                 label="Top K"
                 name="top_k"
@@ -183,17 +195,18 @@ export const TTS: React.FC = () => {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
+              <Form.Item
+                label="Language Mode"
+                name="lang_mode"
+                tooltip="Language mode to use (optional)"
+              >
+                <Select 
+                  options={LANG_MODES.map(mode => ({ label: mode, value: mode }))}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
             </Space>
           </div>
-
-          {audioUrl && (
-            <div className={styles.audioPlayer}>
-              <h3>Generated Audio</h3>
-              <audio controls src={audioUrl}>
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-          )}
         </div>
       </Form>
     </Card>

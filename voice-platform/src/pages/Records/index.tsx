@@ -5,12 +5,13 @@ import { useAppStore } from '../../store';
 import { ttsService } from '../../services/api';
 import type { TTSRecord } from '../../services/api';
 import styles from './styles.module.css';
-
+import { useTheme } from '../../contexts/ThemeContext';
 const { Text } = Typography;
 
 export const Records = () => {
   const { records, isLoadingRecords, currentPage, totalPages, fetchRecords } = useAppStore();
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchRecords();
@@ -46,27 +47,43 @@ export const Records = () => {
 
   const handleDelete = (recordId: string) => {
     Modal.confirm({
-      title: 'Delete Record',
-      content: 'Are you sure you want to delete this record?',
-      okText: 'Yes',
+      title: '删除记录',
+      content: '确认删除？',
+      okText: '确认',
       okType: 'danger',
-      cancelText: 'No',
+      cancelText: '取消',
       onOk: async () => {
         try {
           const response = await ttsService.deleteRecord(recordId);
           if ('error' in response) {
             throw new Error(response.error);
           }
-          message.success('Record deleted successfully');
+          message.success('删除成功');
           fetchRecords(currentPage);
         } catch (error) {
-          message.error('Failed to delete record');
+          message.error('删除失败');
         }
+      },
+      style: {
+        color: theme.token.colorText,
+        backgroundColor: theme.token.bgColorSecondary,
       }
     });
   };
 
   const columns = [
+    {
+      title: 'Text',
+      dataIndex: 'text',
+      key: 'text',
+      width: '40%',
+      ellipsis: true,
+      render: (text: string, record: TTSRecord) => (
+        <span onClick={() => handlePlay(record)}>
+          <PlayCircleOutlined /> {text}
+        </span>
+      )
+    },
     {
       title: 'Speaker',
       dataIndex: 'speaker_name',
@@ -74,16 +91,10 @@ export const Records = () => {
       render: (text: string) => <Text strong>{text}</Text>
     },
     {
-      title: 'Text',
-      dataIndex: 'text',
-      key: 'text',
-      width: '30%',
-      ellipsis: true
-    },
-    {
       title: 'Language',
       dataIndex: 'lang',
       key: 'lang',
+      // width: '10%',
       render: (lang: string) => (
         <Tag color={lang === 'en' ? 'blue' : 'green'}>
           {lang.toUpperCase()}
@@ -100,19 +111,19 @@ export const Records = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: TTSRecord) => (
-        <Space>
-          <Button
-            type="text"
+        <Space size="small">
+          {/* <Button
+            // type="text"
             icon={<PlayCircleOutlined />}
             onClick={() => handlePlay(record)}
-          />
+          /> */}
           <Button
-            type="text"
+            // type="text"
             icon={<DownloadOutlined />}
             onClick={() => handleDownload(record)}
           />
           <Button
-            type="text"
+            // type="text"
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}

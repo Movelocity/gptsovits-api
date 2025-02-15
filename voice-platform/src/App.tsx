@@ -1,5 +1,5 @@
 import { RouterProvider } from 'react-router-dom';
-import { ConfigProvider, theme as antTheme } from 'antd';
+import { ConfigProvider, theme as antTheme, App as AntdApp } from 'antd';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { router } from './routes';
 
@@ -13,7 +13,9 @@ const AppContent = () => {
         token: theme.token
       }}
     >
-      <RouterProvider router={router} />
+      <AntdApp>
+        <RouterProvider router={router} />
+      </AntdApp>
     </ConfigProvider>
   );
 };

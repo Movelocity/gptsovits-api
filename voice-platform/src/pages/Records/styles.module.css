@@ -1,5 +1,6 @@
 .records {
   padding: 24px;
+  overflow-x: auto;
 }
 
 .header {
