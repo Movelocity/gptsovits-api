@@ -187,27 +187,3 @@ export const getVersions = async () => {
     console.error('Error fetching versions:', error);
   }
 }
-
-// Example usage
-// (async () => {
-//   try {
-//     const records = await getTTSRecords();
-//     console.log('TTS Records:', records);
-
-//     const ttsResponse = await createTTS('Hello, world!', 'en', 1);
-//     console.log('Created TTS:', ttsResponse);
-
-//     const speakers = await getSpeakers();
-//     console.log('Speakers:', speakers);
-    
-//     // Assuming you have a file input for the voice file
-//     const voiceFileInput = document.querySelector('#voicefile-input');
-//     const newSpeakerResponse = await addSpeaker('John Doe', voiceFileInput.files[0], 'Sample text.', 'en');
-//     console.log('Added Speaker:', newSpeakerResponse);
-
-//     const voiceFile = await getVoiceFile('ref', 'john_doe.wav');
-//     console.log('Voice File:', voiceFile);
-//   } catch (error) {
-//     console.error('Error in operations:', error);
-//   }
-// })();
