@@ -47,7 +47,7 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: appTheme.token.colorBgContainer }}>
+    <Layout style={{ minHeight: '100vh' }}>
       <Sider
         trigger={null}
         collapsible
@@ -68,8 +68,8 @@ export const DashboardLayout = () => {
           }))}
         />
       </Sider>
-      <Layout style={{ width: '100%' }} >
-        <Header className={styles.header} style={{ background: token.colorBgContainer }}>
+      <Layout style={{ width: '100%', background: token.colorBgContainer }} >
+        <Header className={styles.header} style={{ background: appTheme.token.bgColorSecondary }}>
           {collapsed ? (
             <MenuUnfoldOutlined
               className={styles.trigger}
@@ -82,7 +82,7 @@ export const DashboardLayout = () => {
             />
           )}
         </Header>
-        <Content className={styles.content} style={{ background: token.colorBgContainer }}>
+        <Content className={styles.content} style={{ }}>
           <Outlet />
         </Content>
       </Layout>

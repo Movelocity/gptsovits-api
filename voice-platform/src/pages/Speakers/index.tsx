@@ -89,7 +89,7 @@ export const Speakers = () => {
           <Button
             type="link"
             size="small"
-            onClick={() => window.open(speakerService.getSpeakerAudioUrl(record.voicefile))}
+            onClick={() => window.open(speakerService.getSpeakerAudioUrl(record.id.toString()))}
           >
             Play Sample
           </Button>
