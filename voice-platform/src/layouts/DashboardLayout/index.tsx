@@ -68,7 +68,7 @@ export const DashboardLayout = () => {
           }))}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ width: '100%' }}>
         <Header className={styles.header} style={{ background: token.colorBgContainer }}>
           {collapsed ? (
             <MenuUnfoldOutlined
