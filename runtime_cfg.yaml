@@ -1,5 +1,5 @@
 paths:
-  model_root: "D:/weights/gpt-sovits"
+  model_root: "E:/weights/gpt-sovits"
 
 proxy: "http://localhost:7890"
 
