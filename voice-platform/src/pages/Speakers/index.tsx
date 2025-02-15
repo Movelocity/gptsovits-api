@@ -4,11 +4,11 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, PlayCircleO
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store';
 import { speakerService } from '../../services/api';
-import type { Speaker, AddSpeakerRequest } from '../../services/api';
+import type { Speaker } from '../../services/api';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+import { LANG_MODES } from '../../services/api/config';
 import styles from './styles.module.css';
 
-const { Option } = Select;
 
 export const Speakers = () => {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ export const Speakers = () => {
   const [form] = Form.useForm();
   const { playAudio, stopCurrentAudio, isPlaying, isLoading } = useAudioPlayer();
   const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSpeakers();
@@ -29,10 +31,23 @@ export const Speakers = () => {
     };
   }, [stopCurrentAudio]);
 
+  useEffect(() => {
+    return () => {
+      if (audioPreviewUrl) {
+        URL.revokeObjectURL(audioPreviewUrl);
+      }
+    };
+  }, [audioPreviewUrl]);
+
   const handleAdd = () => {
     setEditingSpeaker(null);
     form.resetFields();
     setIsModalVisible(true);
+    setAudioFile(null);
+    if (audioPreviewUrl) {
+      URL.revokeObjectURL(audioPreviewUrl);
+      setAudioPreviewUrl(null);
+    }
   };
 
   const handleEdit = (speaker: Speaker) => {
@@ -67,17 +82,31 @@ export const Speakers = () => {
 
   const handleSubmit = async (values: any) => {
     try {
+      if (!audioFile && !editingSpeaker) {
+        throw new Error('Please upload a voice file');
+      }
+
       if (editingSpeaker) {
         const response = await speakerService.updateSpeaker({
           spk_id: editingSpeaker.id,
-          ...values
+          name: values.name,
+          text: values.text,
+          lang: values.lang,
+          description: values.description,
+          ...(audioFile && { voicefile: audioFile })
         });
         if ('error' in response) {
           throw new Error(response.error);
         }
         message.success('Speaker updated successfully');
       } else {
-        const response = await speakerService.addSpeaker(values as AddSpeakerRequest);
+        const response = await speakerService.addSpeaker({
+          name: values.name,
+          voicefile: audioFile!,
+          text: values.text,
+          lang: values.lang,
+          description: values.description
+        });
         if ('error' in response) {
           throw new Error(response.error);
         }
@@ -214,27 +243,41 @@ export const Speakers = () => {
             label="Language"
             rules={[{ required: true, message: 'Please select language' }]}
           >
-            <Select>
-              <Option value="en">English</Option>
-              <Option value="zh">Chinese</Option>
-            </Select>
+            <Select options={LANG_MODES.map(lang => ({ label: lang, value: lang }))} />
           </Form.Item>
 
-          {!editingSpeaker && (
-            <Form.Item
-              name="voicefile"
-              label="Voice Sample"
-              rules={[{ required: true, message: 'Please upload a voice sample' }]}
-            >
+          <Form.Item
+            name="voicefile"
+            label="Voice Sample"
+            rules={[{ required: true, message: 'Please upload a voice sample' }]}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
               <Upload
-                beforeUpload={() => false}
+                beforeUpload={(file) => {
+                  if (audioPreviewUrl) {
+                    URL.revokeObjectURL(audioPreviewUrl);
+                  }
+                  setAudioFile(file);
+                  setAudioPreviewUrl(URL.createObjectURL(file));
+                  return false;
+                }}
                 maxCount={1}
                 accept="audio/*"
+                onRemove={() => {
+                  setAudioFile(null);
+                  if (audioPreviewUrl) {
+                    URL.revokeObjectURL(audioPreviewUrl);
+                    setAudioPreviewUrl(null);
+                  }
+                }}
               >
                 <Button icon={<UploadOutlined />}>Upload Audio File</Button>
               </Upload>
-            </Form.Item>
-          )}
+              {audioPreviewUrl && (
+                <audio controls src={audioPreviewUrl} style={{ width: '100%' }} />
+              )}
+            </Space>
+          </Form.Item>
 
           <Form.Item
             name="text"
