@@ -3,6 +3,7 @@ print("loading modules...")
 from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from common import infer_tts_port, shared
 from service.tts import TTSService
@@ -15,6 +16,15 @@ from service.db import Base, engine
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 app.mount("/html", StaticFiles(directory="html"), name="html")
 @app.get("/")

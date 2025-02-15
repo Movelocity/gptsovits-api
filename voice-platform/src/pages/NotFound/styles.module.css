@@ -1,0 +1,23 @@
+.notFound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+}
+
+:global(.ant-result-404 .ant-result-image) {
+  height: 200px;
+  margin: 32px auto;
+}
+
+@media (max-width: 768px) {
+  .notFound {
+    padding: 16px;
+  }
+
+  :global(.ant-result-404 .ant-result-image) {
+    height: 160px;
+    margin: 24px auto;
+  }
+}

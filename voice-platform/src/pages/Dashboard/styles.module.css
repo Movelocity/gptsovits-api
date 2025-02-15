@@ -1,0 +1,44 @@
+.dashboard {
+  padding: 24px;
+}
+
+.chartsRow {
+  margin-top: 24px;
+}
+
+:global(.ant-card) {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.3s;
+}
+
+:global(.ant-card:hover) {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+:global(.ant-statistic-title) {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+:global(.ant-statistic-content) {
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+  }
+
+  .chartsRow {
+    margin-top: 16px;
+  }
+
+  :global(.ant-statistic-title) {
+    font-size: 14px;
+  }
+
+  :global(.ant-statistic-content) {
+    font-size: 20px;
+  }
+}

@@ -5,27 +5,34 @@ import { Speakers } from '../pages/Speakers';
 import { Records } from '../pages/Records';
 import { NotFound } from '../pages/NotFound';
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
     {
-        path: '/',
-        element: <DashboardLayout />,
-        children: [
-            {
-                index: true,
-                element: <Dashboard />
-            },
-            {
-                path: 'speakers',
-                element: <Speakers />
-            },
-            {
-                path: 'records',
-                element: <Records />
-            },
-            {
-                path: '*',
-                element: <NotFound />
-            }
-        ]
+      path: '/',
+      element: <DashboardLayout />,
+      children: [
+        {
+          index: true,
+          element: <Dashboard />
+        },
+        {
+          path: 'speakers',
+          element: <Speakers />
+        },
+        {
+          path: 'records',
+          element: <Records />
+        },
+        {
+          path: '*',
+          element: <NotFound />
+        }
+      ]
     }
-]); 
+  ],
+  {
+    future: {
+      // v7_startTransition: true,
+    },
+  }
+); 

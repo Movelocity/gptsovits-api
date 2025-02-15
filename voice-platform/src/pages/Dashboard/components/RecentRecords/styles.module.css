@@ -1,0 +1,26 @@
+.recentRecords {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.recentRecords :global(.ant-list-item) {
+  padding: 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.recentRecords :global(.ant-list-item:hover) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.date {
+  font-size: 12px;
+}
