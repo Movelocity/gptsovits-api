@@ -34,7 +34,7 @@ export const Speakers = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (speakerId: number) => {
+  const handleDelete = async (_speakerId: number) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this speaker?',
       content: 'This action cannot be undone.',

@@ -87,3 +87,8 @@
     padding: 16px;
   }
 }
+
+.glass {
+  background: var(--ant-body-bg);
+  backdrop-filter: blur(4px);
+}

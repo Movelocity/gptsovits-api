@@ -1,11 +1,37 @@
 :root {
+  /* Typography */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
+  /* Use Ant Design CSS Variables */
+  --primary-main: var(--ant-color-primary);
+  --primary-light: var(--ant-color-primary-hover);
+  --primary-dark: var(--ant-color-primary-active);
+  
+  --secondary-main: var(--ant-color-info);
+  --secondary-light: var(--ant-color-info-hover);
+  --secondary-dark: var(--ant-color-info-active);
+  
+  --background-primary: var(--ant-color-bg-container);
+  --background-secondary: var(--ant-color-bg-elevated);
+  --background-tertiary: var(--ant-color-bg-layout);
+  
+  --text-primary: var(--ant-color-text);
+  --text-secondary: var(--ant-color-text-secondary);
+  --text-disabled: var(--ant-color-text-disabled);
+  
+  --error: var(--ant-color-error);
+  --warning: var(--ant-color-warning);
+  --success: var(--ant-color-success);
+  --info: var(--ant-color-info);
+
+  --border-color: var(--ant-color-border);
+  --divider-color: var(--ant-color-split);
+
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--text-primary);
+  background-color: var(--background-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,13 +39,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Remove light theme overrides since we're using Ant Design's theme system */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--text-primary);
+    background-color: var(--background-primary);
+  }
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--primary-main);
   text-decoration: inherit;
+  transition: color 0.2s ease;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--primary-light);
 }
 
 body {
@@ -28,41 +63,35 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--background-secondary);
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: var(--text-primary);
 }
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--background-tertiary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s ease;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--primary-main);
+  background-color: var(--background-secondary);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid var(--primary-dark);
+  outline-offset: 2px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+

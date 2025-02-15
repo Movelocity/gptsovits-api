@@ -10,11 +10,7 @@ const AppContent = () => {
     <ConfigProvider
       theme={{
         algorithm: theme.mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
-        token: {
-          colorPrimary: theme.primaryColor,
-          colorInfo: theme.primaryColor,
-          borderRadius: 6,
-        }
+        token: theme.token
       }}
     >
       <RouterProvider router={router} />

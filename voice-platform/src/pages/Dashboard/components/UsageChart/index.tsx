@@ -45,7 +45,7 @@ export const UsageChart = () => {
           <Line
             type="monotone"
             dataKey="count"
-            stroke={theme.primaryColor}
+            stroke={theme.token.colorPrimary}
             activeDot={{ r: 8 }}
           />
         </LineChart>
