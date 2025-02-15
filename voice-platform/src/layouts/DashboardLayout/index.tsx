@@ -6,7 +6,8 @@ import {
   UserOutlined,
   HistoryOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  AudioOutlined
 } from '@ant-design/icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { NavItem } from '../../types/layout';
@@ -32,6 +33,12 @@ const navItems: NavItem[] = [
     label: 'Records',
     path: '/records',
     icon: <HistoryOutlined />
+  },
+  {
+    key: 'tts',
+    label: 'Text to Speech',
+    path: '/tts',
+    icon: <AudioOutlined />
   }
 ];
 

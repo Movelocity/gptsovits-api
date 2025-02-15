@@ -1,22 +1,33 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Space, Modal, Form, Input, Select, Upload, message } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, PlayCircleOutlined, LoadingOutlined, PauseCircleOutlined, AudioOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store';
 import { speakerService } from '../../services/api';
 import type { Speaker, AddSpeakerRequest } from '../../services/api';
+import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import styles from './styles.module.css';
 
 const { Option } = Select;
 
 export const Speakers = () => {
+  const navigate = useNavigate();
   const { speakers, isLoadingSpeakers, currentPage, totalPages, fetchSpeakers } = useAppStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSpeaker, setEditingSpeaker] = useState<Speaker | null>(null);
   const [form] = Form.useForm();
+  const { playAudio, stopCurrentAudio, isPlaying, isLoading } = useAudioPlayer();
+  const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchSpeakers();
   }, [fetchSpeakers]);
+
+  useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+    };
+  }, [stopCurrentAudio]);
 
   const handleAdd = () => {
     setEditingSpeaker(null);
@@ -29,6 +40,7 @@ export const Speakers = () => {
     form.setFieldsValue({
       name: speaker.name,
       lang: speaker.lang,
+      text: speaker.text,
       description: speaker.description
     });
     setIsModalVisible(true);
@@ -78,6 +90,21 @@ export const Speakers = () => {
     }
   };
 
+  const handlePlaySample = (speakerId: number) => {
+    if (currentPlayingId === speakerId) {
+      stopCurrentAudio();
+      setCurrentPlayingId(null);
+    } else {
+      const audioUrl = speakerService.getSpeakerAudioUrl(speakerId.toString());
+      playAudio(audioUrl);
+      setCurrentPlayingId(speakerId);
+    }
+  };
+
+  const handleTTS = (speakerId: number) => {
+    navigate(`/tts?speakerId=${speakerId}`);
+  };
+
   const columns = [
     {
       title: 'Name',
@@ -87,12 +114,18 @@ export const Speakers = () => {
         <Space>
           {text}
           <Button
-            type="link"
-            size="small"
-            onClick={() => window.open(speakerService.getSpeakerAudioUrl(record.id.toString()))}
-          >
-            Play Sample
-          </Button>
+            type="text"
+            icon={
+              isLoading && currentPlayingId === record.id ? (
+                <LoadingOutlined />
+              ) : currentPlayingId === record.id && isPlaying ? (
+                <PauseCircleOutlined />
+              ) : (
+                <PlayCircleOutlined />
+              )
+            }
+            onClick={() => handlePlaySample(record.id)}
+          />
         </Space>
       )
     },
@@ -112,6 +145,13 @@ export const Speakers = () => {
       key: 'actions',
       render: (_: any, record: Speaker) => (
         <Space>
+          <Button
+            type="primary"
+            icon={<AudioOutlined />}
+            onClick={() => handleTTS(record.id)}
+          >
+            Try TTS
+          </Button>
           <Button
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}

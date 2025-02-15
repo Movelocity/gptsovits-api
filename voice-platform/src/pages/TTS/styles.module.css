@@ -1,0 +1,13 @@
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.container h1 {
+  margin-bottom: 2rem;
+}
+
+.audioPlayer {
+  width: 100%;
+  margin-top: 1rem;
+} 
