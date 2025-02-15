@@ -1,13 +1,56 @@
 .container {
-  max-width: 800px;
-  margin: 2rem auto;
+  max-width: 1200px;
 }
 
 .container h1 {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.formContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.textInputSection {
+  grid-column: 1;
+}
+
+.advancedSection {
+  grid-column: 2;
+  border-radius: 8px;
 }
 
 .audioPlayer {
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 2rem;
+  grid-column: 1 / -1;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.speakerInfo {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .formContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .textInputSection,
+  .advancedSection {
+    grid-column: 1;
+  }
+
+  .container {
+    padding: 1rem;
+  }
 } 

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Input, Button, message, Space, Form, InputNumber, Collapse, Select } from 'antd';
+import { Card, Input, Button, message, Space, Form, InputNumber, Select } from 'antd';
 import { ttsService } from '../../services/api/ttsService';
 import { speakerService } from '../../services/api/speakerService';
 import type { Speaker } from '../../services/api/types';
 import styles from './styles.module.css';
 
 const { TextArea } = Input;
-const { Panel } = Collapse;
 
 interface TTSFormValues {
   text: string;
@@ -107,10 +106,6 @@ export const TTS: React.FC = () => {
 
   return (
     <Card className={styles.container}>
-      <h1>Text to Speech</h1>
-      {speaker && (
-        <p>Selected speaker: {speaker.name}</p>
-      )}
       <Form
         form={form}
         onFinish={handleGenerate}
@@ -122,75 +117,85 @@ export const TTS: React.FC = () => {
         }}
         layout="vertical"
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Form.Item
-            name="text"
-            rules={[{ required: true, message: 'Please enter text to convert' }]}
-          >
-            <TextArea
-              rows={4}
-              placeholder="Enter text to convert to speech..."
-            />
-          </Form.Item>
-
-          <Collapse ghost>
-            <Panel header="Advanced Settings" key="1">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Form.Item
-                  label="Top K"
-                  name="top_k"
-                  tooltip="Controls diversity by limiting the cumulative probability of tokens considered"
-                >
-                  <InputNumber min={1} max={100} style={{ width: '100%' }} />
-                </Form.Item>
-
-                <Form.Item
-                  label="Top P"
-                  name="top_p"
-                  tooltip="Controls diversity using nucleus sampling"
-                >
-                  <InputNumber min={0} max={1} step={0.1} style={{ width: '100%' }} />
-                </Form.Item>
-
-                <Form.Item
-                  label="Temperature"
-                  name="temperature"
-                  tooltip="Controls randomness in the generation process"
-                >
-                  <InputNumber min={0.1} max={2} step={0.1} style={{ width: '100%' }} />
-                </Form.Item>
-
-                <Form.Item
-                  label="Model Version"
-                  name="version"
-                  tooltip="Specific model version to use (optional)"
-                >
-                  <Select 
-                    options={modelVersions.map(version => ({ label: version, value: version }))} 
-                  />
-                </Form.Item>
-              </Space>
-            </Panel>
-          </Collapse>
-
-          <Form.Item>
+        <div className={styles.formContainer}>
+          <div className={styles.textInputSection}>
+            {speaker && (
+              <div className={styles.speakerInfo}>
+                <span>Selected speaker: <strong>{speaker.name}</strong></span>
+                {speaker.lang && <span>Language: {speaker.lang}</span>}
+              </div>
+            )}
+            <Form.Item
+              name="text"
+              rules={[{ required: true, message: 'Please enter text to convert' }]}
+            >
+              <TextArea
+                rows={8}
+                placeholder="Enter text to convert to speech..."
+                style={{ resize: 'vertical', minHeight: '200px' }}
+              />
+            </Form.Item>
             <Button
               type="primary"
               htmlType="submit"
               loading={isGenerating}
               block
+              size="large"
             >
               Generate Speech
             </Button>
-          </Form.Item>
-        </Space>
-      </Form>
+          </div>
 
-      {audioUrl && (
-        <audio controls src={audioUrl} className={styles.audioPlayer}>
-          Your browser does not support the audio element.
-        </audio>
-      )}
+          <div className={styles.advancedSection}>
+            <h3>Advanced Settings</h3>
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Form.Item
+                label="Top K"
+                name="top_k"
+                tooltip="Controls diversity by limiting the cumulative probability of tokens considered"
+              >
+                <InputNumber min={1} max={100} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Top P"
+                name="top_p"
+                tooltip="Controls diversity using nucleus sampling"
+              >
+                <InputNumber min={0} max={1} step={0.1} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Temperature"
+                name="temperature"
+                tooltip="Controls randomness in the generation process"
+              >
+                <InputNumber min={0.1} max={2} step={0.1} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Model Version"
+                name="version"
+                tooltip="Specific model version to use (optional)"
+              >
+                <Select 
+                  options={modelVersions.map(version => ({ label: version, value: version }))}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Space>
+          </div>
+
+          {audioUrl && (
+            <div className={styles.audioPlayer}>
+              <h3>Generated Audio</h3>
+              <audio controls src={audioUrl}>
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
+        </div>
+      </Form>
     </Card>
   );
 }; 
