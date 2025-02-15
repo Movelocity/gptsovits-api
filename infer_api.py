@@ -26,15 +26,15 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-app.mount("/html", StaticFiles(directory="html"), name="html")
-@app.get("/")
-async def read_root():
-    return {"message": "Welcome to the FastAPI app!"}
+# app.mount("/html", StaticFiles(directory="html"), name="html")
+# @app.get("/")
+# async def read_root():
+#     return {"message": "Welcome to the FastAPI app!"}
 
-# Optional: Create a route to serve the HTML file directly
-@app.get("/html")
-async def read_index():
-    return FileResponse("html/index.html")
+# # Optional: Create a route to serve the HTML file directly
+# @app.get("/html")
+# async def read_index():
+#     return FileResponse("html/index.html")
 
 import math
 

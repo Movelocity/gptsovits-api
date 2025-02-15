@@ -88,5 +88,26 @@ export const ttsService = {
    */
   getAudioFileUrl(fileId: string): string {
     return `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VOICEFILE}?type=gen&id=${fileId}`;
+  },
+
+  async getMovelVersions(): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/versions`,
+        {
+          method: 'GET',
+          headers: DEFAULT_HEADERS,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete TTS record');
+      }
+
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
   }
 }; 

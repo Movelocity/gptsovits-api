@@ -147,11 +147,10 @@ export const Speakers = () => {
         <Space>
           <Button
             type="primary"
+            title="Try TTS"
             icon={<AudioOutlined />}
             onClick={() => handleTTS(record.id)}
-          >
-            Try TTS
-          </Button>
+          />
           <Button
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
