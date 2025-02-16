@@ -93,7 +93,7 @@ export const ttsService = {
   async getMovelVersions(): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(
-        `${API_CONFIG.BASE_URL}/versions`,
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERSIONS}`,
         {
           method: 'GET',
           headers: DEFAULT_HEADERS,

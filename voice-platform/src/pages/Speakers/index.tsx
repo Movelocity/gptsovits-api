@@ -131,7 +131,7 @@ export const Speakers = () => {
   };
 
   const handleTTS = (speakerId: number) => {
-    navigate(`/tts?speakerId=${speakerId}`);
+    navigate(`/page/tts?speakerId=${speakerId}`);
   };
 
   const columns = [
@@ -141,7 +141,6 @@ export const Speakers = () => {
       key: 'name',
       render: (text: string, record: Speaker) => (
         <Space>
-          {text}
           <Button
             type="text"
             icon={
@@ -155,6 +154,7 @@ export const Speakers = () => {
             }
             onClick={() => handlePlaySample(record.id)}
           />
+          {text}
         </Space>
       )
     },

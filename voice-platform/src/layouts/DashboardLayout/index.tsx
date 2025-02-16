@@ -19,27 +19,21 @@ const navItems: NavItem[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
-    path: '/',
+    path: '/page',
     icon: <DashboardOutlined />
   },
   {
     key: 'speakers',
     label: 'Speakers',
-    path: '/speakers',
+    path: '/page/speakers',
     icon: <UserOutlined />
   },
   {
     key: 'records',
     label: 'Records',
-    path: '/records',
+    path: '/page/records',
     icon: <HistoryOutlined />
-  },
-  // {
-  //   key: 'tts',
-  //   label: 'Text to Speech',
-  //   path: '/tts',
-  //   icon: <AudioOutlined />
-  // }
+  }
 ];
 
 export const DashboardLayout = () => {
@@ -73,7 +67,7 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', width: 'calc(100vw - 18px)' }} className={classNames({[styles.siderCollapsed]: collapsed})}>
+    <Layout style={{ minHeight: '100vh', width: '98vw' }} className={classNames({[styles.siderCollapsed]: collapsed})}>
       <Sider
         trigger={null}
         collapsible

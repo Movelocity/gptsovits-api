@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#41D1FF"/>
+      <stop offset="100%" stop-color="#BD34FE"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main icon background -->
+  <circle cx="50" cy="50" r="45" fill="url(#aiGradient)"/>
+  
+  <!-- Neural network/circuit pattern -->
+  <path d="M35 35L45 45M65 35L55 45M45 55L35 65M55 55L65 65" 
+        stroke="white" 
+        stroke-width="2" 
+        stroke-linecap="round"/>
+  
+  <!-- Sound wave symbol -->
+  <path d="M25 50h5v10h-5zm10-8h5v26h-5zm10 4h5v18h-5zm10-4h5v26h-5zm10 8h5v10h-5z" 
+        fill="white"/>
+  
+  <!-- Glowing effect -->
+  <circle cx="50" cy="50" r="45" fill="none" 
+          stroke="white" 
+          stroke-width="2" 
+          stroke-opacity="0.2"/>
+</svg> 

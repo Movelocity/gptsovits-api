@@ -26,19 +26,21 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+if os.path.exists("voice-platform/dist"):
+    app.mount("/page", StaticFiles(directory="voice-platform/dist"), name="voice-platform")
+
+    @app.get("/page")
+    async def read_index():
+        return FileResponse("voice-platform/dist/index.html")
 # app.mount("/html", StaticFiles(directory="html"), name="html")
 # @app.get("/")
 # async def read_root():
 #     return {"message": "Welcome to the FastAPI app!"}
 
 # # Optional: Create a route to serve the HTML file directly
-# @app.get("/html")
-# async def read_index():
-#     return FileResponse("html/index.html")
-
 import math
 
-@app.get("/records")
+@app.get("/api/records")
 async def get_tts_records(page: int, page_size: int):
     """return list of objects in json"""
     records = TTSService.get_extended_records(page, page_size)
@@ -50,19 +52,19 @@ async def get_tts_records(page: int, page_size: int):
         "total": count
     }
 
-@app.delete("/record")
+@app.delete("/api/record")
 async def delete_record(
     id: str = Query(alias="id")
 ):
     success = TTSService.delete_record(id)
     return {"msg": "ok" if success else "failed"}
 
-@app.post("/tts")
+@app.post("/api/tts")
 async def create_tts(request: TTSRequest):
     """response {"filename": filename}, if err there won't be filename field"""
     return TTSService.create_tts(request)
 
-@app.post("/speaker")
+@app.post("/api/speaker")
 async def add_speaker(
     name: str = Form(...),
     voicefile: UploadFile = File(...),
@@ -78,7 +80,7 @@ async def add_speaker(
         print(e)
         return {"id": 0, "name": "failed"}
 
-@app.post("/speaker-update")
+@app.post("/api/speaker-update")
 async def add_speaker(
     spk_id: int = Form(...),
     name: str = Form(...),
@@ -96,18 +98,18 @@ async def add_speaker(
         print(e)
         return {"id": 0, "name": "failed"}
 
-@app.get("/versions")
+@app.get("/api/versions")
 async def get_versions():
     return list(shared.speaker_dict.keys())
 
-@app.get("/speaker")
+@app.get("/api/speaker")
 async def get_speaker(
     id: int = Query(alias="id")
 ):
     speaker = SpeakerService.get_speaker(id)
     return speaker.to_dict()
 
-@app.get("/speakers")
+@app.get("/api/speakers")
 async def get_speakers(
     page: int = Query(1, alias="page"), 
     page_size: int = Query(1, alias="page_size")
@@ -121,7 +123,7 @@ async def get_speakers(
         "total": count
     }
 
-@app.get("/voicefile")
+@app.get("/api/voicefile")
 async def get_voicefile(
     type: str = Query(alias="type"), 
     id: str = Query(alias="id")
@@ -143,7 +145,7 @@ async def get_voicefile(
 import uuid
 from speech2text import speech2text, speech2text_fast
 
-@app.post("/asr")
+@app.post("/api/asr")
 async def asr(
     voicefile: UploadFile = File(...),
     lang: str = Form("zh")

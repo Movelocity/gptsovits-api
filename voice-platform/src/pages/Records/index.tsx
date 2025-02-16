@@ -1,39 +1,39 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Space, Modal, message, Typography, Tag } from 'antd';
-import { PlayCircleOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, DeleteOutlined, DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useAppStore } from '../../store';
 import { ttsService } from '../../services/api';
 import type { TTSRecord } from '../../services/api';
 import styles from './styles.module.css';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 const { Text } = Typography;
 
 export const Records = () => {
   const { records, isLoadingRecords, currentPage, totalPages, fetchRecords } = useAppStore();
-  const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const { playAudio, stopCurrentAudio, isPlaying, isLoading } = useAudioPlayer();
+  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
     fetchRecords();
   }, [fetchRecords]);
 
+  useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+    };
+  }, [stopCurrentAudio]);
+
   const handlePlay = (record: TTSRecord) => {
-    if (playingAudio) {
-      playingAudio.pause();
-      playingAudio.currentTime = 0;
+    if (currentPlayingId === record.id) {
+      stopCurrentAudio();
+      setCurrentPlayingId(null);
+    } else {
+      const audioUrl = ttsService.getAudioFileUrl(record.id);
+      playAudio(audioUrl);
+      setCurrentPlayingId(record.id);
     }
-
-    const audio = new Audio(ttsService.getAudioFileUrl(record.id));
-    audio.play().catch(error => {
-      message.error('Failed to play audio');
-      console.error('Audio playback failed:', error);
-    });
-
-    setPlayingAudio(audio);
-
-    audio.addEventListener('ended', () => {
-      setPlayingAudio(null);
-    });
   };
 
   const handleDownload = (record: TTSRecord) => {
@@ -79,9 +79,22 @@ export const Records = () => {
       width: '40%',
       ellipsis: true,
       render: (text: string, record: TTSRecord) => (
-        <span onClick={() => handlePlay(record)}>
-          <PlayCircleOutlined /> {text}
-        </span>
+        <div>
+          <Button
+            type="text"
+            icon={
+              isLoading && currentPlayingId === record.id ? (
+                <LoadingOutlined />
+              ) : currentPlayingId === record.id && isPlaying ? (
+                <PauseCircleOutlined />
+              ) : (
+                <PlayCircleOutlined />
+              )
+            }
+            onClick={() => handlePlay(record)}
+          />
+          {text}
+        </div>
       )
     },
     {
@@ -112,18 +125,11 @@ export const Records = () => {
       key: 'actions',
       render: (_: any, record: TTSRecord) => (
         <Space size="small">
-          {/* <Button
-            // type="text"
-            icon={<PlayCircleOutlined />}
-            onClick={() => handlePlay(record)}
-          /> */}
           <Button
-            // type="text"
             icon={<DownloadOutlined />}
             onClick={() => handleDownload(record)}
           />
           <Button
-            // type="text"
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}

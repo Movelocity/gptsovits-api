@@ -5,15 +5,15 @@
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8082', // Update this with your actual port
   ENDPOINTS: {
-    TTS: '/tts',
-    RECORDS: '/records',
-    RECORD: '/record',
-    SPEAKER: '/speaker',
-    SPEAKER_UPDATE: '/speaker-update',
-    SPEAKERS: '/speakers',
-    VOICEFILE: '/voicefile',
-    ASR: '/asr',
-    VERSIONS: '/versions'
+    TTS: '/api/tts',
+    RECORDS: '/api/records',
+    RECORD: '/api/record',
+    SPEAKER: '/api/speaker',
+    SPEAKER_UPDATE: '/api/speaker-update',
+    SPEAKERS: '/api/speakers',
+    VOICEFILE: '/api/voicefile',
+    ASR: '/api/asr',
+    VERSIONS: '/api/versions'
   }
 } as const;
 
