@@ -1,7 +1,8 @@
 import os
+import math
 print("loading modules...")
-from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Form, UploadFile, File, Query, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,13 +33,16 @@ if os.path.exists("voice-platform/dist"):
     @app.get("/page")
     async def read_index():
         return FileResponse("voice-platform/dist/index.html")
-# app.mount("/html", StaticFiles(directory="html"), name="html")
-# @app.get("/")
-# async def read_root():
-#     return {"message": "Welcome to the FastAPI app!"}
 
-# # Optional: Create a route to serve the HTML file directly
-import math
+    @app.exception_handler(404)
+    async def custom_404_handler(request: Request, exc: HTTPException):
+        if "text/html" in request.headers.get("Accept", ""):
+            return RedirectResponse(url="/page")
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
+
 
 @app.get("/api/records")
 async def get_tts_records(page: int, page_size: int):
