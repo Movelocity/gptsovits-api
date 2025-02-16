@@ -35,6 +35,7 @@ export const TTS: React.FC = () => {
       top_p: searchParams.get('top_p') ? Number(searchParams.get('top_p')) : 0.95,
       temperature: searchParams.get('temperature') ? Number(searchParams.get('temperature')) : 0.8,
       lang: searchParams.get('lang') || 'auto',
+      version: searchParams.get('version') || '',
     };
 
     form.setFieldsValue(initialValues);

@@ -51,8 +51,12 @@ export const Records = () => {
   const handleStartTTS = (record: TTSRecord) => {
     const params = new URLSearchParams({
       speakerId: record.speaker_id.toString(),
+      top_k: record.top_k.toString(),
+      top_p: record.top_p.toString(),
+      temperature: record.temperature.toString(),
       text: encodeURIComponent(record.text),
-      lang: record.lang
+      lang: record.lang,
+      version: record.model_version
     });
     navigate(`/page/tts?${params.toString()}`);
   };
