@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Space, Modal, Form, Input, Select, Upload, message } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, PlayCircleOutlined, LoadingOutlined, PauseCircleOutlined, AudioOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, PlayCircleOutlined, LoadingOutlined, PauseCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store';
 import { speakerService } from '../../services/api';
@@ -173,23 +173,25 @@ export const Speakers = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Speaker) => (
-        <Space>
+        <span className={styles.actions}>
           <Button
             type="primary"
             title="Try TTS"
-            icon={<AudioOutlined />}
+            icon={<MessageOutlined />}
             onClick={() => handleTTS(record.id)}
           />
           <Button
+            title="Edit"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           />
           <Button
-            danger
+            // danger
+            title="Delete"
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
           />
-        </Space>
+        </span>
       )
     }
   ];
