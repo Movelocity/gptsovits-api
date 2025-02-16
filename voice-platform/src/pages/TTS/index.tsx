@@ -14,6 +14,7 @@ interface TTSFormValues {
   top_p?: number;
   temperature?: number;
   version?: string;
+  lang?: string;
 }
 
 export const TTS: React.FC = () => {
@@ -77,7 +78,7 @@ export const TTS: React.FC = () => {
       const result = await ttsService.generateSpeech({
         text: values.text,
         speaker_id: speakerIdNum,
-        lang: speaker?.lang || 'en',
+        lang: values.lang || 'auto',
         top_k: values.top_k,
         top_p: values.top_p,
         temperature: values.temperature,
@@ -119,7 +120,7 @@ export const TTS: React.FC = () => {
           top_k: 10,
           top_p: 0.95,
           temperature: 0.8,
-          lang_mode: LANG_MODES[0],
+          lang_mode: 'auto',
         }}
         layout="vertical"
       >

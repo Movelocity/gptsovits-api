@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-speakers: dict = {}
+speakers: dict[str, TTS_Speaker] = {}
 
 class TTSService:
     @staticmethod
@@ -47,7 +47,7 @@ class TTSService:
                 logger.info("加载VITS模型: "+model_version)
                 speakers[model_version] = TTS_Speaker(model_version)
 
-            audio_16bit, sample_rate = speakers.get(model_version).get_tts_wav(
+            audio_16bit, sample_rate = speakers[model_version].get_tts_wav(
                 ref_wav_path=os.path.join(config.REF_VOICE_DIR, speaker.voicefile),
                 prompt_text=speaker.text,
                 prompt_language=speaker.lang,
