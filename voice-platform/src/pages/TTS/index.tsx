@@ -4,8 +4,8 @@ import { Card, Input, Button, Space, Form, InputNumber, Select, App } from 'antd
 import { ttsService } from '../../services/api/ttsService';
 import { speakerService } from '../../services/api/speakerService';
 import type { Speaker } from '../../services/api/types';
-import styles from './styles.module.css';
 import { LANG_MODES } from '../../services/api/config';
+import styles from './styles.module.css';
 const { TextArea } = Input;
 
 interface TTSFormValues {
@@ -28,6 +28,17 @@ export const TTS: React.FC = () => {
   const { message } = App.useApp();
 
   useEffect(() => {
+    // Parse URL parameters for form values
+    const initialValues: Partial<TTSFormValues> = {
+      text: searchParams.get('text') ? decodeURIComponent(searchParams.get('text')!) : '',
+      top_k: searchParams.get('top_k') ? Number(searchParams.get('top_k')) : 10,
+      top_p: searchParams.get('top_p') ? Number(searchParams.get('top_p')) : 0.95,
+      temperature: searchParams.get('temperature') ? Number(searchParams.get('temperature')) : 0.8,
+      lang: searchParams.get('lang') || 'auto',
+    };
+
+    form.setFieldsValue(initialValues);
+
     const fetchSpeaker = async () => {
       if (!speakerId) return;
       const speakerIdNum = parseInt(speakerId, 10);
@@ -120,7 +131,7 @@ export const TTS: React.FC = () => {
           top_k: 10,
           top_p: 0.95,
           temperature: 0.8,
-          lang_mode: 'auto',
+          lang: 'auto',
         }}
         layout="vertical"
       >
@@ -198,7 +209,7 @@ export const TTS: React.FC = () => {
               </Form.Item>
               <Form.Item
                 label="Language Mode"
-                name="lang_mode"
+                name="lang"
                 tooltip="Language mode to use (optional)"
               >
                 <Select 

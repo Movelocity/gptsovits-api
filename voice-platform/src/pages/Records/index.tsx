@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Space, Modal, message, Typography, Tag } from 'antd';
-import { PlayCircleOutlined, PauseCircleOutlined, DeleteOutlined, DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, DeleteOutlined, DownloadOutlined, LoadingOutlined, MessageOutlined } from '@ant-design/icons';
 import { useAppStore } from '../../store';
 import { ttsService } from '../../services/api';
 import type { TTSRecord } from '../../services/api';
 import styles from './styles.module.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+import { useNavigate } from 'react-router-dom';
+
 const { Text } = Typography;
 
 export const Records = () => {
@@ -14,6 +16,7 @@ export const Records = () => {
   const { playAudio, stopCurrentAudio, isPlaying, isLoading } = useAudioPlayer();
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRecords();
@@ -43,6 +46,15 @@ export const Records = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleStartTTS = (record: TTSRecord) => {
+    const params = new URLSearchParams({
+      speakerId: record.speaker_id.toString(),
+      text: encodeURIComponent(record.text),
+      lang: record.lang
+    });
+    navigate(`/page/tts?${params.toString()}`);
   };
 
   const handleDelete = (recordId: string) => {
@@ -124,17 +136,25 @@ export const Records = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: TTSRecord) => (
-        <Space size="small">
+        <span className={styles.actions}>
           <Button
+            type="primary"
+            title="Start TTS"
+            icon={<MessageOutlined />}
+            onClick={() => handleStartTTS(record)}
+          />
+          <Button
+            title="Download"
             icon={<DownloadOutlined />}
             onClick={() => handleDownload(record)}
           />
           <Button
-            danger
+            // danger
+            title="Delete"
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
           />
-        </Space>
+        </span>
       )
     }
   ];
